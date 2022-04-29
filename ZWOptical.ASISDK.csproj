@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>ZWOptical.ASISDK</RootNamespace>
+    <AssemblyName>ZWOptical.ASISDK</AssemblyName>
+    <PackageLicenseFile>license.txt</PackageLicenseFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageId>ZWOptical.ASISDK</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="demo\**" />
+    <EmbeddedResource Remove="demo\**" />
+    <None Remove="demo\**" />
+
+    <None Include="license.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+
+	<None Include="lib\x86\ASICamera2.dll" PackagePath="runtimes/win10-x86/native" Pack="True" />
+	<None Include="lib\x64\ASICamera2.dll" PackagePath="runtimes/win10-x64/native/ASICamera2_x64.dll" Pack="True" />
+  </ItemGroup>
+
+</Project>
