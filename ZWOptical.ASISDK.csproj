@@ -6,21 +6,24 @@
     <AssemblyName>ZWOptical.ASISDK</AssemblyName>
     <PackageLicenseFile>license.txt</PackageLicenseFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<PackageId>ZWOptical.ASISDK</PackageId>
+    <PackageId>ZWOptical.ASISDK</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Version)' == '' ">
+    <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">1.0.0</VersionPrefix>
+    <Version Condition=" '$(VersionSuffix)' != '' And $(VersionSuffix[0]) != '+'">$(VersionPrefix)-$(VersionSuffix)</Version>
+    <Version Condition=" '$(VersionSuffix)' != '' And $(VersionSuffix[0]) == '+'">$(VersionPrefix)$(VersionSuffix)</Version>
+    <Version Condition=" '$(Version)' == '' ">$(VersionPrefix)</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="demo\**" />
-    <EmbeddedResource Remove="demo\**" />
-    <None Remove="demo\**" />
+    <Compile Remove="demo/**" />
+    <EmbeddedResource Remove="demo/**" />
+    <None Remove="demo/**" />
 
-    <None Include="license.txt">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-
-	<None Include="lib\x86\ASICamera2.dll" PackagePath="runtimes/win10-x86/native" Pack="True" />
-	<None Include="lib\x64\ASICamera2.dll" PackagePath="runtimes/win10-x64/native/ASICamera2_x64.dll" Pack="True" />
+    <None Include="license.txt" Pack="True" />
+    <None Include="lib/x86/ASICamera2.dll" PackagePath="runtimes/win10-x86/native" Pack="True" />
+    <None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win10-x64/native/ASICamera2_x64.dll" Pack="True" />
   </ItemGroup>
 
 </Project>
