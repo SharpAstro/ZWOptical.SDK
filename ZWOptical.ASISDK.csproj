@@ -21,7 +21,7 @@
     <EmbeddedResource Remove="demo/**" />
     <None Remove="demo/**" />
 
-    <None Include="license.txt" Pack="True" />
+    <None Include="license.txt" PackagePath="" Pack="True" />
     <None Include="lib/x86/ASICamera2.dll" PackagePath="runtimes/win10-x86/native" Pack="True" />
     <None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win10-x64/native/ASICamera2_x64.dll" Pack="True" />
   </ItemGroup>
