@@ -252,9 +252,11 @@ namespace ZWOptical.ASISDK
         private static extern ASI_ERROR_CODE ASIGetROIFormat64(int iCameraID, out int piWidth, out int piHeight, out int piBin, out ASI_IMG_TYPE pImg_type);
 
         [DllImport("ASICamera2.dll", EntryPoint = "ASIGetSDKVersion", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.LPStr)]
         private static extern string ASIGetSDKVersion32();
 
         [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetSDKVersion", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.LPStr)]
         private static extern string ASIGetSDKVersion64();
 
         [DllImport("ASICamera2.dll", EntryPoint = "ASISetStartPos", CallingConvention = CallingConvention.Cdecl)]
