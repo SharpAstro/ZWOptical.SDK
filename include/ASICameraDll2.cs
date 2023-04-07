@@ -251,6 +251,11 @@ namespace ZWOptical.ASISDK
         [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetROIFormat", CallingConvention = CallingConvention.Cdecl)]
         private static extern ASI_ERROR_CODE ASIGetROIFormat64(int iCameraID, out int piWidth, out int piHeight, out int piBin, out ASI_IMG_TYPE pImg_type);
 
+        [DllImport("ASICamera2.dll", EntryPoint = "ASIGetSDKVersion", CallingConvention = CallingConvention.Cdecl)]
+        private static extern string ASIGetSDKVersion32();
+
+        [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetSDKVersion", CallingConvention = CallingConvention.Cdecl)]
+        private static extern string ASIGetSDKVersion64();
 
         [DllImport("ASICamera2.dll", EntryPoint = "ASISetStartPos", CallingConvention = CallingConvention.Cdecl)]
         private static extern ASI_ERROR_CODE ASISetStartPos32(int iCameraID, int iStartX, int iStartY);
@@ -385,6 +390,9 @@ namespace ZWOptical.ASISDK
 
         public static ASI_ERROR_CODE ASIGetROIFormat(int iCameraID, out int piWidth, out int piHeight, out int piBin, out ASI_IMG_TYPE pImg_type)
         { return IntPtr.Size == 8 /* 64bit */ ? ASIGetROIFormat64(iCameraID, out piWidth, out piHeight, out piBin, out pImg_type) : ASIGetROIFormat32(iCameraID, out piWidth, out piHeight, out piBin, out pImg_type); }
+
+        public static string ASIGetSDKVersion()
+        { return IntPtr.Size == 8 /* 64bit */ ? ASIGetSDKVersion64() : ASIGetSDKVersion32(); }
 
         public static ASI_ERROR_CODE ASISetStartPos(int iCameraID, int iStartX, int iStartY)
         { return IntPtr.Size == 8 /* 64bit */ ? ASISetStartPos64(iCameraID, iStartX, iStartY) : ASISetStartPos32(iCameraID, iStartX, iStartY); }
