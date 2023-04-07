@@ -257,6 +257,12 @@ namespace ZWOptical.ASISDK
         [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetSDKVersion", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr ASIGetSDKVersion64();
 
+        [DllImport("ASICamera2.dll", EntryPoint = "ASIGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ASI_ERROR_CODE  ASIGetSerialNumber32(int iCameraID, out ASI_ID pSN);
+
+        [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ASI_ERROR_CODE ASIGetSerialNumber64(int iCameraID, out ASI_ID pSN);
+
         [DllImport("ASICamera2.dll", EntryPoint = "ASISetStartPos", CallingConvention = CallingConvention.Cdecl)]
         private static extern ASI_ERROR_CODE ASISetStartPos32(int iCameraID, int iStartX, int iStartY);
 
@@ -440,7 +446,7 @@ namespace ZWOptical.ASISDK
         public static ASI_ERROR_CODE ASISetID(int iCameraID, ASI_ID ID)
         { return IntPtr.Size == 8 /* 64bit */ ? ASISetID64(iCameraID, ID) : ASISetID32(iCameraID, ID); }
 
+        public static ASI_ERROR_CODE ASIGetSerialNumber(int iCameraID, out ASI_ID pID)
+        { return IntPtr.Size == 8 /* 64bit */ ? ASIGetSerialNumber64(iCameraID, out pID) : ASIGetSerialNumber32(iCameraID, out pID); }
     }
-
-
 }
