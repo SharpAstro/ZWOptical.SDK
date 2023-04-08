@@ -449,5 +449,30 @@ namespace ZWOptical.ASISDK
 
         public static ASI_ERROR_CODE ASIGetSerialNumber(int iCameraID, out ASI_ID pID)
         { return IntPtr.Size == 8 /* 64bit */ ? ASIGetSerialNumber64(iCameraID, out pID) : ASIGetSerialNumber32(iCameraID, out pID); }
+
+        public bool TryGetControlRange(
+            int iCameraID,
+            ASI_CONTROL_TYPE ctrlType,
+            out int min,
+            out int max)
+        {
+            min = max = 0;
+            if (ASIGetNumOfControls(iCameraID, out int numberOfControls) != ASI_ERROR_CODE.ASI_SUCCESS)
+            {
+                return false;
+            }
+
+            for (int controlIdx = 0; controlIdx < numberOfControls; ++controlIdx)
+            {
+                var controlCapsErrorCode = ASIGetControlCaps(iCameraID, controlIdx, out ASI_CONTROL_CAPS controlCaps);
+                if (controlCapsErrorCode == ASI_ERROR_CODE.ASI_SUCCESS && controlCaps.ControlType == ctrlType)
+                {
+                    min = controlCaps.MinValue;
+                    max = controlCaps.MaxValue;
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
