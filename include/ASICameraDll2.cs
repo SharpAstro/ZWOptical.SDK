@@ -383,12 +383,13 @@ namespace ZWOptical.ASISDK
         public static ASI_ERROR_CODE ASISetControlValue(int iCameraID, ASI_CONTROL_TYPE ControlType, int lValue)
         { return IntPtr.Size == 8 /* 64bit */ ? ASISetControlValue64(iCameraID, ControlType, lValue, ASI_BOOL.ASI_FALSE) : ASISetControlValue32(iCameraID, ControlType, lValue, ASI_BOOL.ASI_FALSE); }
 
-        public static int ASIGetControlValue(int iCameraID, ASI_CONTROL_TYPE ControlType)
+        public static ASI_ERROR_CODE ASIGetControlValue(int iCameraID, ASI_CONTROL_TYPE ControlType, out int plValue, out bool isAuto)
         {
-            ASI_BOOL pbAuto;
-            int plValue;
-            ASI_ERROR_CODE err = IntPtr.Size == 8 /* 64bit */ ? ASIGetControlValue64(iCameraID, ControlType, out plValue, out pbAuto) : ASIGetControlValue32(iCameraID, ControlType, out plValue, out pbAuto);
-            return plValue;
+            ASI_ERROR_CODE err = IntPtr.Size == 8 /* 64bit */
+                ? ASIGetControlValue64(iCameraID, ControlType, out plValue, out ASI_BOOL pbAuto)
+                : ASIGetControlValue32(iCameraID, ControlType, out plValue, out pbAuto);
+            isAuto = pbAuto is ASI_BOOL.ASI_TRUE;
+            return err;
         }
 
         public static ASI_ERROR_CODE ASISetROIFormat(int iCameraID, int iWidth, int iHeight, int iBin, ASI_IMG_TYPE Img_type)
