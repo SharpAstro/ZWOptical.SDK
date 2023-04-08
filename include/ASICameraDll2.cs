@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ZWOptical.ASISDK
 {
-    public class ASICameraDll2
+    public static class ASICameraDll2
     {
         public enum ASI_CONTROL_TYPE
         {
@@ -450,7 +450,7 @@ namespace ZWOptical.ASISDK
         public static ASI_ERROR_CODE ASIGetSerialNumber(int iCameraID, out ASI_ID pID)
         { return IntPtr.Size == 8 /* 64bit */ ? ASIGetSerialNumber64(iCameraID, out pID) : ASIGetSerialNumber32(iCameraID, out pID); }
 
-        public bool TryGetControlRange(
+        public static bool TryGetControlRange(
             int iCameraID,
             ASI_CONTROL_TYPE ctrlType,
             out int min,
