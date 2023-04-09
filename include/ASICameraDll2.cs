@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ZWOptical.ASISDK
@@ -129,8 +130,15 @@ namespace ZWOptical.ASISDK
             public ASI_BOOL IsUSB3Camera;
             public float ElecPerADU;
 
-            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 24)]
-            public byte[] Unused;//[20];
+            /// <summary>
+            /// Actual bit depth
+            /// </summary>
+            public int BitDepth;
+
+            public ASI_BOOL IsTriggerCam;
+
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
+            public byte[] Unused;
 
             public string Name
             {
@@ -154,7 +162,7 @@ namespace ZWOptical.ASISDK
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 32)]
             public byte[] Unused;//[32];
 
-  			public string Name
+            public string Name
             {
                 get { return Encoding.ASCII.GetString(name).TrimEnd((Char)0); }
             }
@@ -165,10 +173,31 @@ namespace ZWOptical.ASISDK
             }
         }
 
+        public enum ASI_CAMERA_MODE
+        {
+            ASI_MODE_NORMAL = 0,
+            ASI_MODE_TRIG_SOFT_EDGE,
+            ASI_MODE_TRIG_RISE_EDGE,
+            ASI_MODE_TRIG_FALL_EDGE,
+            ASI_MODE_TRIG_SOFT_LEVEL,
+            ASI_MODE_TRIG_HIGH_LEVEL,
+            ASI_MODE_TRIG_LOW_LEVEL,
+            ASI_MODE_END = -1
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ASI_SUPPORTED_MODE
+        {
+            /// <summary>
+            /// // this array will content with the support camera mode type.ASI_MODE_END is the end of supported camera mode.
+            /// </summary>
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+            public ASI_CAMERA_MODE[] SupportedCameraMode;
+        }
 
         public struct ASI_ID{
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8)]
-	        public byte[] id;
+            public byte[] id;
             public string ID
             {
                 get { return Encoding.ASCII.GetString(id).TrimEnd((Char)0); }
@@ -358,7 +387,17 @@ namespace ZWOptical.ASISDK
         [DllImport("ASICamera2_x64.dll", EntryPoint = "ASISetID", CallingConvention = CallingConvention.Cdecl)]
         private static extern ASI_ERROR_CODE ASISetID64(int iCameraID, ASI_ID ID);
 
+        [DllImport("ASICamera2.dll", EntryPoint = "ASIGetCameraSupportMode", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ASI_ERROR_CODE ASIGetCameraSupportMode32(int iCameraID, out ASI_SUPPORTED_MODE pSupportedMode);
 
+        [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetCameraSupportMode", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ASI_ERROR_CODE ASIGetCameraSupportMode64(int iCameraID, out ASI_SUPPORTED_MODE pSupportedMode);
+
+        [DllImport("ASICamera2.dll", EntryPoint = "ASIGetCameraMode", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ASI_ERROR_CODE ASIGetCameraMode32(int iCameraID, out ASI_CAMERA_MODE mode);
+
+        [DllImport("ASICamera2_x64.dll", EntryPoint = "ASIGetCameraMode", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ASI_ERROR_CODE ASIGetCameraMode64(int iCameraID, out ASI_CAMERA_MODE mode);
 
         public static int ASIGetNumOfConnectedCameras() { return IntPtr.Size == 8 /* 64bit */ ? ASIGetNumOfConnectedCameras64() : ASIGetNumOfConnectedCameras32(); }
 
@@ -449,6 +488,62 @@ namespace ZWOptical.ASISDK
 
         public static ASI_ERROR_CODE ASIGetSerialNumber(int iCameraID, out ASI_ID pID)
         { return IntPtr.Size == 8 /* 64bit */ ? ASIGetSerialNumber64(iCameraID, out pID) : ASIGetSerialNumber32(iCameraID, out pID); }
+
+        /// <summary>
+        /// Get the camera supported mode, only need to call when the <see cref="ASI_CAMERA_INFO.IsTriggerCam"/> in the <see cref="ASI_CAMERA_INFO"/> is  <see langword="true"/>
+        /// </summary>
+        /// <param name="iCameraID">this is get from the camera property use the API ASIGetCameraProperty</param>
+        /// <param name="pSupportedMode">the camera supported mode</param>
+        /// <returns>
+        ///   <list type="table">
+        ///     <listheader>
+        ///       <term>Return code</term>
+        ///       <description>reason</description>
+        ///     </listheader>
+        ///     <item>
+        ///       <term>ASI_SUCCESS</term>
+        ///       <description>Operation is successful</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_CAMERA_CLOSED</term>
+        ///       <description>camera did not open</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_INVALID_ID</term>
+        ///       <description>no camera of this ID is connected or ID value is out of boundary</description>
+        ///     </item>
+        ///   </list>
+        /// </returns>
+        public static ASI_ERROR_CODE ASIGetCameraSupportMode(int iCameraID, out ASI_SUPPORTED_MODE pSupportedMode)
+        { return IntPtr.Size == 8 /* 64bit */ ? ASIGetCameraSupportMode64(iCameraID, out pSupportedMode) : ASIGetCameraSupportMode32(iCameraID, out pSupportedMode); }
+
+        /// <summary>
+        /// Get the camera current mode, only need to call when the <see cref="ASI_CAMERA_INFO.IsTriggerCam"/> in the <see cref="ASI_CAMERA_INFO"/> is  <see langword="true"/>
+        /// </summary>
+        /// <param name="iCameraID">this is get from the camera property use the API ASIGetCameraProperty</param>
+        /// <param name="mode">the current camera mode</param>
+        /// <returns>
+        ///   <list type="table">
+        ///     <listheader>
+        ///       <term>Return code</term>
+        ///       <description>reason</description>
+        ///     </listheader>
+        ///     <item>
+        ///       <term>ASI_SUCCESS</term>
+        ///       <description>Operation is successful</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_CAMERA_CLOSED</term>
+        ///       <description>camera did not open</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_INVALID_ID</term>
+        ///       <description>no camera of this ID is connected or ID value is out of boundary</description>
+        ///     </item>
+        ///   </list>
+        /// </returns>
+        public static ASI_ERROR_CODE ASIGetCameraMode(int iCameraID, out ASI_CAMERA_MODE mode)
+        { return IntPtr.Size == 8 /* 64bit */ ? ASIGetCameraMode64(iCameraID, out mode) : ASIGetCameraMode32(iCameraID, out mode); }
 
         public static bool TryGetControlRange(
             int iCameraID,
