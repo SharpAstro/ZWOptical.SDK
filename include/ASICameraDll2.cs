@@ -264,7 +264,7 @@ namespace ZWOptical.ASISDK
         public static extern ASI_ERROR_CODE ASIPulseGuideOff(int iCameraID, ASI_GUIDE_DIRECTION direction);
 
         [DllImport("ASICamera2.dll", EntryPoint = "ASIStartExposure", CallingConvention = CallingConvention.Cdecl)]
-        private static extern ASI_ERROR_CODE ASIStartExposure(int iCameraID, ASI_BOOL bIsDark);
+        private static extern ASI_ERROR_CODE ASIStartExposureImpl(int iCameraID, ASI_BOOL bIsDark);
 
         [DllImport("ASICamera2.dll", EntryPoint = "ASIStopExposure", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE ASIStopExposure(int iCameraID);
@@ -283,6 +283,21 @@ namespace ZWOptical.ASISDK
 
         [DllImport("ASICamera2.dll", EntryPoint = "ASISetID", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE ASISetID(int iCameraID, ASI_ID ID);
+
+        /// <summary>
+        /// Starts an exposure with an open <see cref="ASI_CAMERA_INFO.MechanicalShutter"/> (i.e. a light exposure).
+        /// </summary>
+        /// <param name="iCameraID"></param>
+        /// <returns><see cref="ASI_ERROR_CODE.ASI_SUCCESS"/> if exposure was started successfully.</returns>
+        public static ASI_ERROR_CODE ASIStartLightExposure(int iCameraID) => ASIStartExposureImpl(iCameraID, ASI_BOOL.ASI_FALSE);
+
+        /// <summary>
+        /// Starts an exposure with a closed <see cref="ASI_CAMERA_INFO.MechanicalShutter"/>.
+        /// Is the same as <see cref="ASIStartLightExposure"/> if above property is <see cref="ASI_BOOL.ASI_FALSE"/>.
+        /// </summary>
+        /// <param name="iCameraID"></param>
+        /// <returns><see cref="ASI_ERROR_CODE.ASI_SUCCESS"/> if exposure was started successfully.</returns>
+        public static ASI_ERROR_CODE ASIStartDarkExposure(int iCameraID) => ASIStartExposureImpl(iCameraID, ASI_BOOL.ASI_TRUE);
 
         /// <summary>
         /// Get the camera supported mode, only need to call when the <see cref="ASI_CAMERA_INFO.IsTriggerCam"/> in the <see cref="ASI_CAMERA_INFO"/> is  <see langword="true"/>
