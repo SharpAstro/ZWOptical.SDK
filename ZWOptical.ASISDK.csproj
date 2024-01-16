@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Version)' == '' ">
-    <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">1.2.0</VersionPrefix>
+    <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">1.3.0</VersionPrefix>
     <Version Condition=" '$(VersionSuffix)' != '' And $(VersionSuffix[0]) != '+'">$(VersionPrefix)-$(VersionSuffix)</Version>
     <Version Condition=" '$(VersionSuffix)' != '' And $(VersionSuffix[0]) == '+'">$(VersionPrefix)$(VersionSuffix)</Version>
     <Version Condition=" '$(Version)' == '' ">$(VersionPrefix)</Version>
@@ -22,10 +22,12 @@
     <None Remove="demo/**" />
 
     <None Include="license.txt" PackagePath="" Pack="True" />
+    <None Include="lib/x86/libASICamera2.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
     <None Include="lib/x86/ASICamera2.dll" PackagePath="runtimes/win10-x86/native" Pack="True" />
-    <None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win10-x64/native" Pack="True" />
     <None Include="lib/x64/libASICamera2.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+    <None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win10-x64/native" Pack="True" />
     <None Include="lib/armv7/libASICamera2.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+    <None Include="lib/armv8/libASICamera2.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
   </ItemGroup>
 
 </Project>
