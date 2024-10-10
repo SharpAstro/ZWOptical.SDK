@@ -45,15 +45,14 @@ namespace ZWOptical.ASISDK
 
         public struct EAF_INFO
         {
-            int ID;
-            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            byte[] name;
-            int MaxStep;//fixed maximum position
+            public int ID;
 
-            public string Name
-            {
-                get { return Encoding.ASCII.GetString(name).TrimEnd((Char)0); }
-            }
+            [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
+            private byte[] name;
+
+            public int MaxStep;//fixed maximum position
+
+            public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
         }
 
         const string EAFSharedLib = "EAFFocuser1.6";

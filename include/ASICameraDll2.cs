@@ -139,10 +139,7 @@ namespace ZWOptical.ASISDK
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
             public byte[] Unused;
 
-            public string Name
-            {
-                get { return Encoding.ASCII.GetString(name).TrimEnd((Char)0); }
-            }
+            public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
         };
 
         [StructLayout(LayoutKind.Sequential)]
@@ -255,7 +252,7 @@ namespace ZWOptical.ASISDK
         public static extern ASI_ERROR_CODE ASIPulseGuideOff(int iCameraID, ASI_GUIDE_DIRECTION direction);
 
         [DllImport("ASICamera2", EntryPoint = "ASIStartExposure", CallingConvention = CallingConvention.Cdecl)]
-        private static extern ASI_ERROR_CODE ASIStartExposureImpl(int iCameraID, ASI_BOOL bIsDark);
+        public static extern ASI_ERROR_CODE ASIStartExposure(int iCameraID, ASI_BOOL bIsDark);
 
         [DllImport("ASICamera2", EntryPoint = "ASIStopExposure", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE ASIStopExposure(int iCameraID);
@@ -280,7 +277,7 @@ namespace ZWOptical.ASISDK
         /// </summary>
         /// <param name="iCameraID"></param>
         /// <returns><see cref="ASI_ERROR_CODE.ASI_SUCCESS"/> if exposure was started successfully.</returns>
-        public static ASI_ERROR_CODE ASIStartLightExposure(int iCameraID) => ASIStartExposureImpl(iCameraID, ASI_BOOL.ASI_FALSE);
+        public static ASI_ERROR_CODE ASIStartLightExposure(int iCameraID) => ASIStartExposure(iCameraID, ASI_BOOL.ASI_FALSE);
 
         /// <summary>
         /// Starts an exposure with a closed <see cref="ASI_CAMERA_INFO.MechanicalShutter"/>.
@@ -288,7 +285,7 @@ namespace ZWOptical.ASISDK
         /// </summary>
         /// <param name="iCameraID"></param>
         /// <returns><see cref="ASI_ERROR_CODE.ASI_SUCCESS"/> if exposure was started successfully.</returns>
-        public static ASI_ERROR_CODE ASIStartDarkExposure(int iCameraID) => ASIStartExposureImpl(iCameraID, ASI_BOOL.ASI_TRUE);
+        public static ASI_ERROR_CODE ASIStartDarkExposure(int iCameraID) => ASIStartExposure(iCameraID, ASI_BOOL.ASI_TRUE);
 
         /// <summary>
         /// Get the camera supported mode, only need to call when the <see cref="ASI_CAMERA_INFO.IsTriggerCam"/> in the <see cref="ASI_CAMERA_INFO"/> is  <see langword="true"/>
