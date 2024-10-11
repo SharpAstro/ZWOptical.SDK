@@ -30,69 +30,52 @@ namespace ZWOptical.SDK
             public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
         };
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetNum", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int EFWGetNum32();
+        const string EFWSharedLib = "EFW1.7";
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetID", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWGetID32(int index, out int ID);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetSDKVersion", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr _EFWGetSDKVersion();
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetProperty", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWGetProperty32(int ID, out EFW_INFO pInfo);
+        public static Version EFWGetSDKVersion() => Common.ParseVersionString(_EFWGetSDKVersion());
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWOpen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWOpen32(int index);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetNum", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int EFWGetNum();
+
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetID", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWGetID(int index, out int ID);
+
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetProperty", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWGetProperty(int ID, out EFW_INFO pInfo);
+
+        [DllImport(EFWSharedLib, EntryPoint = "EFWOpen", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWOpen(int index);
 
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWClose", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWClose32(int ID);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWClose", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWClose(int ID);
       
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetPosition", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWGetPosition32(int ID, out int pPosition);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetPosition", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWGetPosition(int ID, out int pPosition);
       
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWSetPosition", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWSetPosition32(int ID, int Position);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWSetPosition", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWSetPosition(int ID, int Position);
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWSetDirection", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWSetDirection32(int ID, [MarshalAs(UnmanagedType.I1)]bool bUnidirectional);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWSetDirection", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWSetDirection(int ID, [MarshalAs(UnmanagedType.I1)]bool bUnidirectional);
 
       
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetDirection", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWGetDirection32(int ID, [MarshalAs(UnmanagedType.I1)]out bool bUnidirectional);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetDirection", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWGetDirection(int ID, [MarshalAs(UnmanagedType.I1)]out bool bUnidirectional);
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetFirmwareVersion", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWGetFWVer32(int ID, out byte pbMajor, out byte pbMinor, out byte pbBuild);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetFirmwareVersion", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWGetFWVer(int ID, out byte pbMajor, out byte pbMinor, out byte pbBuild);
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWGetSerialNumber32(int ID, out SDK_ID sn);
+        [DllImport(EFWSharedLib, EntryPoint = "EFWGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWGetSerialNumber(int ID, out SDK_ID sn);
 
-        [DllImport("EFW_filter_ASCOM.dll", EntryPoint = "EFWSetID", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EFW_ERROR_CODE EFWSetID32(int ID, SDK_ID alias);
-
-        public static int GetNum() { return EFWGetNum32(); }
-      
-        public static EFW_ERROR_CODE GetID(int index, out int ID){ return  EFWGetID32(index, out ID); }
-
-        public static EFW_ERROR_CODE GetProperty(int ID, out EFW_INFO pInfo){ return  EFWGetProperty32( ID, out pInfo); }
-
-        public static EFW_ERROR_CODE Open(int index){ return EFWOpen32(index) ; }
-
-        public static EFW_ERROR_CODE Close(int ID){ return EFWClose32(ID); }
-
-        public static EFW_ERROR_CODE GetPosition(int ID, out int pPosition){ return  EFWGetPosition32(ID, out pPosition); }
-
-        public static EFW_ERROR_CODE SetPosition(int ID, int Position){ return EFWSetPosition32(ID, Position); }
-
-        public static EFW_ERROR_CODE GetDirection(int ID, out bool bUnidirectional){ return  EFWGetDirection32(ID, out bUnidirectional); }
-
-        public static EFW_ERROR_CODE SetDirection(int ID, bool bUnidirectional){ return  EFWSetDirection32(ID, bUnidirectional); }
-
-        public static EFW_ERROR_CODE GetFWVer(int ID, out byte bMajor, out byte bMinor, out byte bBuild){ return EFWGetFWVer32(ID, out bMajor, out bMinor, out bBuild); }
-
-        public static EFW_ERROR_CODE GetSerialNumber(int ID, out SDK_ID sn){ return EFWGetSerialNumber32(ID, out sn); }
-
-        public static EFW_ERROR_CODE SetID(int ID, SDK_ID alias){ return EFWSetID32(ID, alias); }
+        [DllImport(EFWSharedLib, EntryPoint = "EFWSetID", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EFW_ERROR_CODE EFWSetID(int ID, SDK_ID alias);
     }
 
 

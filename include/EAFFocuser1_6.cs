@@ -56,6 +56,7 @@ namespace ZWOptical.SDK
         }
 
         const string EAFSharedLib = "EAFFocuser1.6";
+
         public static readonly int EAF_ID_MAX = 128;
         public static readonly int ZWO_VENDOR_ID = 0x03C3;
         public static readonly int ZWO_EAF_PRODUCT_ID = 0x1f10;
