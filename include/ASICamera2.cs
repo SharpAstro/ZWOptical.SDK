@@ -104,7 +104,7 @@ namespace ZWOptical.SDK
             ASI_FLIP_BOTH,//:both horizontal and vertical flip
 
         };
-        public struct ASI_CAMERA_INFO
+        public struct ASI_CAMERA_INFO : IZWODeviceInfo
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
             private byte[] _name;// char[64]; //the name of the camera, you can display this to the UI
@@ -137,9 +137,18 @@ namespace ZWOptical.SDK
             public ASI_BOOL IsTriggerCam;
 
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
-            private byte[] _unused;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Native struct padding")]
+            private readonly byte[] _unused;
+
+            public int ID => CameraID;
 
             public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
+
+            public bool Open() => ASIOpenCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
+
+            public bool Close() => ASICloseCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
+
+            public SDK_ID? SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn : null as SDK_ID?;
         };
 
         [StructLayout(LayoutKind.Sequential)]

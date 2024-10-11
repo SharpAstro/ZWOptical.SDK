@@ -43,16 +43,24 @@ namespace ZWOptical.SDK
             EAF_ERROR_END = -1
         }
 
-        public struct EAF_INFO
+        public struct EAF_INFO : IZWODeviceInfo
         {
-            public int ID;
+            private int _id;
 
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] name;
+            private byte[] _name;
 
             public int MaxStep;//fixed maximum position
 
-            public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
+            public int ID => _id;
+
+            public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
+
+            public bool Open() => EAFOpen(ID) is EAF_ERROR_CODE.EAF_SUCCESS;
+
+            public bool Close() => EAFClose(ID) is  EAF_ERROR_CODE.EAF_SUCCESS;
+
+            public SDK_ID? SerialNumber => EAFGetSerialNumber(ID, out var sn) is EAF_ERROR_CODE.EAF_SUCCESS ? sn : null as SDK_ID?;
         }
 
         const string EAFSharedLib = "EAFFocuser1.6";

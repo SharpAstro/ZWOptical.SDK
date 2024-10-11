@@ -20,14 +20,22 @@ namespace ZWOptical.SDK
         }
 
      	[StructLayout(LayoutKind.Sequential)]
-        public struct EFW_INFO
+        public struct EFW_INFO : IZWODeviceInfo
         {
-            public int ID;
+            private int _id;
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
             private byte[] name;
             public int slotNum;
 
+            public int ID => _id;
+
             public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
+
+            public bool Open() => EFWOpen(ID) is EFW_ERROR_CODE.EFW_SUCCESS;
+
+            public bool Close() => EFWClose(ID) is  EFW_ERROR_CODE.EFW_SUCCESS;
+
+            public SDK_ID? SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn : null as SDK_ID?;
         };
 
         const string EFWSharedLib = "EFW1.7";
@@ -69,7 +77,7 @@ namespace ZWOptical.SDK
         public static extern EFW_ERROR_CODE EFWGetDirection(int ID, [MarshalAs(UnmanagedType.I1)]out bool bUnidirectional);
 
         [DllImport(EFWSharedLib, EntryPoint = "EFWGetFirmwareVersion", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EFW_ERROR_CODE EFWGetFWVer(int ID, out byte pbMajor, out byte pbMinor, out byte pbBuild);
+        public static extern EFW_ERROR_CODE EFWGetFirmwareVersion(int ID, out byte pbMajor, out byte pbMinor, out byte pbBuild);
 
         [DllImport(EFWSharedLib, EntryPoint = "EFWGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
         public static extern EFW_ERROR_CODE EFWGetSerialNumber(int ID, out SDK_ID sn);
@@ -77,6 +85,4 @@ namespace ZWOptical.SDK
         [DllImport(EFWSharedLib, EntryPoint = "EFWSetID", CallingConvention = CallingConvention.Cdecl)]
         public static extern EFW_ERROR_CODE EFWSetID(int ID, SDK_ID alias);
     }
-
-
 }
