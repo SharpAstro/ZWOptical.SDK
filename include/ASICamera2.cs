@@ -107,7 +107,7 @@ namespace ZWOptical.SDK
         public struct ASI_CAMERA_INFO
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            public byte[] name;// char[64]; //the name of the camera, you can display this to the UI
+            private byte[] _name;// char[64]; //the name of the camera, you can display this to the UI
             public int CameraID; //this is used to control everything of the camera in other functions
             public int MaxHeight; //the max height of the camera
             public int MaxWidth;	//the max width of the camera
@@ -137,9 +137,9 @@ namespace ZWOptical.SDK
             public ASI_BOOL IsTriggerCam;
 
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
-            public byte[] Unused;
+            private byte[] _unused;
 
-            public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
+            public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
         };
 
         [StructLayout(LayoutKind.Sequential)]
