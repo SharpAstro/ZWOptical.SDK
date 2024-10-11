@@ -247,9 +247,6 @@ namespace ZWOptical.ASISDK
         [DllImport(EAFSharedLib, EntryPoint = "EAFStop", CallingConvention = CallingConvention.Cdecl)]
         public static extern EAF_ERROR_CODE EAFStop(int ID);
 
-        [DllImport(EAFSharedLib, EntryPoint = "EAFIsMoving", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EAF_ERROR_CODE _EAFIsMoving(int ID, out int isMoving, out int isUsingHandControl);
-
         /// <summary>
         /// Check if the focuser is moving.
         /// </summary>
@@ -266,15 +263,8 @@ namespace ZWOptical.ASISDK
         ///   <item><term>EAF_SUCCESS</term><description>operation succeeds</description></term></item>
         /// </list>
         /// </returns>
-        public static EAF_ERROR_CODE EAFIsMoving(int ID, out bool isMoving, out bool isUsingHandControl)
-        {
-            var code = _EAFIsMoving(ID, out var isMovingInt, out var isUsingHandControlInt);
-
-            isMoving = isMovingInt != 0;
-            isUsingHandControl = isUsingHandControlInt != 0;
-
-            return code;
-        }
+        [DllImport(EAFSharedLib, EntryPoint = "EAFIsMoving", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EAF_ERROR_CODE EAFIsMoving(int ID, [MarshalAs(UnmanagedType.I1)] out bool isMoving, [MarshalAs(UnmanagedType.I1)] out bool isUsingHandControl);
 
         /// <summary>
         /// Get current position.
@@ -349,9 +339,6 @@ namespace ZWOptical.ASISDK
         [DllImport(EAFSharedLib, EntryPoint = "EAFSetBeep", CallingConvention = CallingConvention.Cdecl)]
         public static extern EAF_ERROR_CODE EAFSetBeep(int ID, bool setBeep);
 
-        [DllImport(EAFSharedLib, EntryPoint = "EAFGetBeep", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EAF_ERROR_CODE _EAFGetBeep(int ID, out int isBeepSet);
-
         /// <summary>
         /// Get if beep is turned on.
         /// </summary>
@@ -367,14 +354,8 @@ namespace ZWOptical.ASISDK
         ///   <item><term>EAF_SUCCESS</term><description>operation succeeds</description></term></item>
         /// </list>
         /// </returns>
-        public static EAF_ERROR_CODE EAFGetBeep(int ID, out bool isBeepSet)
-        {
-            var code = _EAFGetBeep(ID, out var isBeepSetInt);
-
-            isBeepSet = isBeepSetInt != 0;
-
-            return code;
-        }
+        [DllImport(EAFSharedLib, EntryPoint = "EAFGetBeep", CallingConvention = CallingConvention.Cdecl)]
+        public static extern EAF_ERROR_CODE EAFGetBeep(int ID, [MarshalAs(UnmanagedType.I1)] out bool isBeepSet);
 
         /// <summary>
         /// Set the maximum position (in steps).
@@ -451,9 +432,6 @@ namespace ZWOptical.ASISDK
         [DllImport(EAFSharedLib, EntryPoint = "EAFSetReverse", CallingConvention = CallingConvention.Cdecl)]
         public static extern EAF_ERROR_CODE EAFSetReverse(int ID, bool setReverse);
 
-        [DllImport(EAFSharedLib, EntryPoint = "EAFGetReverse", CallingConvention = CallingConvention.Cdecl)]
-        private static extern EAF_ERROR_CODE _EAFGetReverse(int ID, out int isReverse);
-
         /// <summary>
         /// Get moving direction of focuser.
         /// </summary>
@@ -469,14 +447,8 @@ namespace ZWOptical.ASISDK
         ///   <item><term>EAF_SUCCESS</term><description>operation succeeds</description></term></item>
         /// </list>
         /// </returns>
-        public static EAF_ERROR_CODE EAFGetReverse(int ID, out bool isReverse)
-        {
-            var code = _EAFGetReverse(ID, out var isBeepSetInt);
-
-            isReverse = isBeepSetInt != 0;
-
-            return code;
-        }
+        [DllImport(EAFSharedLib, EntryPoint = "EAFGetReverse", CallingConvention = CallingConvention.Cdecl)]
+        private static extern EAF_ERROR_CODE EAFGetReverse(int ID, [MarshalAs(UnmanagedType.I1)] out bool isReverse);
 
         /// <summary>
         /// Set backlash of focuser.
