@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace ZWOptical.ASISDK
+namespace ZWOptical.SDK
 {
     internal static class Common
     {

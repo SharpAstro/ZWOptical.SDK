@@ -2,9 +2,9 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ZWOptical.ASISDK
+namespace ZWOptical.SDK
 {
-    public static class EAFFocuser16
+    public static class EAFFocuser1_6
     {
         public enum EAF_ERROR_CODE
         {
@@ -84,7 +84,7 @@ namespace ZWOptical.ASISDK
         /// </list>
         /// </returns>  
         [DllImport(EAFSharedLib, EntryPoint = "EAFSetID", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EAF_ERROR_CODE EAFSetID(int ID, ASI_ID alias);
+        public static extern EAF_ERROR_CODE EAFSetID(int ID, SDK_ID alias);
 
         /// <summary>
         /// Check if the device is EAF.
@@ -210,7 +210,7 @@ namespace ZWOptical.ASISDK
         /// </list>
         /// </returns>
         [DllImport(EAFSharedLib, EntryPoint = "EAFGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EAF_ERROR_CODE EAFGetSerialNumber(int ID, out ASI_ID serialNumber);
+        public static extern EAF_ERROR_CODE EAFGetSerialNumber(int ID, out SDK_ID serialNumber);
 
         /// <summary>
         /// Move focuser to an absolute position.
