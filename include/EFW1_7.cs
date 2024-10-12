@@ -36,6 +36,8 @@ namespace ZWOptical.SDK
             public bool Close() => EFWClose(ID) is  EFW_ERROR_CODE.EFW_SUCCESS;
 
             public SDK_ID? SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn : null as SDK_ID?;
+
+            public bool IsUSB3Device => false;
         };
 
         const string EFWSharedLib = "EFW1.7";

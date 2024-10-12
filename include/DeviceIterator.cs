@@ -1,18 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using static ZWOptical.SDK.ASICamera2;
+using static ZWOptical.SDK.ASICamera2.ASI_ERROR_CODE;
+using static ZWOptical.SDK.EAFFocuser1_6;
+using static ZWOptical.SDK.EAFFocuser1_6.EAF_ERROR_CODE;
+using static ZWOptical.SDK.EFW1_7;
+using static ZWOptical.SDK.EFW1_7.EFW_ERROR_CODE;
 
 namespace ZWOptical.SDK
 {
-    public class DeviceIterator<TDeviceType> : IEnumerable<int>
-        where TDeviceType : struct, IZWODeviceInfo
+    public class DeviceIterator<TDeviceInfo> : IEnumerable<int>
+        where TDeviceInfo : struct, IZWODeviceInfo
     {
         public IEnumerator<int> GetEnumerator()
         {
             var count = DeviceCount();
 
-            for (var i = 0; i < count; i++)
+            for (var index = 0; index < count; index++)
             {
-                var id = GetId(i);
+                var id = GetId(index);
                 if (id.HasValue)
                 {
                     yield return id.Value;
@@ -22,38 +28,39 @@ namespace ZWOptical.SDK
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-
-        public int DeviceCount()
+        int DeviceCount()
         {
-            if (typeof(TDeviceType) == typeof(ASICamera2.ASI_CAMERA_INFO))
+            if (typeof(TDeviceInfo) == typeof(ASI_CAMERA_INFO))
             {
-                return ASICamera2.ASIGetNumOfConnectedCameras();
+                return ASIGetNumOfConnectedCameras();
             }
-            else if (typeof(TDeviceType) == typeof(EAFFocuser1_6.EAF_INFO))
+            else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
             {
-                return EAFFocuser1_6.EAFGetNum();
+                return EAFGetNum();
             }
-            else if (typeof(TDeviceType) == typeof(EFW1_7.EFW_INFO))
+            else if (typeof(TDeviceInfo) == typeof(EFW_INFO))
             {
-                return EFW1_7.EFWGetNum();
+                return EFWGetNum();
             }
 
             return 0;
         }
 
-        public int? GetId(int index)
+        int? GetId(int index)
         {
-            if (typeof(TDeviceType) == typeof(ASICamera2.ASI_CAMERA_INFO))
+            if (typeof(TDeviceInfo) == typeof(ASI_CAMERA_INFO))
             {
-                return ASICamera2.ASIGetCameraProperty(out var camInfo, index) is ASICamera2.ASI_ERROR_CODE.ASI_SUCCESS ? camInfo.CameraID : null as int?;
+                return ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS ? camInfo.CameraID : null as int?;
             }
-            else if (typeof(TDeviceType) == typeof(EAFFocuser1_6.EAF_INFO))
+            else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
             {
-                return EAFFocuser1_6.EAFGetID(index, out var eafId) is EAFFocuser1_6.EAF_ERROR_CODE.EAF_SUCCESS ? eafId : null as int?;
+                return EAFGetID(index, out var eafId) is EAF_SUCCESS
+                    && EAFGetProperty(eafId, out var eafInfo) is EAF_SUCCESS && eafInfo.ID == eafId ? eafId : null as int?;
             }
-            else if (typeof(TDeviceType) == typeof(EFW1_7.EFW_INFO))
+            else if (typeof(TDeviceInfo) == typeof(EFW_INFO))
             {
-                return EFW1_7.EFWGetID(index, out var efwId) is EFW1_7.EFW_ERROR_CODE.EFW_SUCCESS ? efwId : null as int?;
+                return EFWGetID(index, out var efwId) is EFW_SUCCESS
+                    && EFWGetProperty(efwId, out var efwInfo) is EFW_SUCCESS && efwInfo.ID == efwId ? efwId : null as int?;
             }
 
             return null;

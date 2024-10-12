@@ -149,6 +149,8 @@ namespace ZWOptical.SDK
             public bool Close() => ASICloseCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
 
             public SDK_ID? SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn : null as SDK_ID?;
+
+            public bool IsUSB3Device => IsUSB3Camera is ASI_BOOL.ASI_TRUE;
         };
 
         [StructLayout(LayoutKind.Sequential)]

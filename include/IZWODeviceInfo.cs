@@ -11,5 +11,7 @@
         bool Close();
 
         SDK_ID? SerialNumber { get; }
+
+        bool IsUSB3Device { get; }
     }
 }
