@@ -9,19 +9,19 @@ using static ZWOptical.SDK.EFW1_7.EFW_ERROR_CODE;
 
 namespace ZWOptical.SDK
 {
-    public class DeviceIterator<TDeviceInfo> : IEnumerable<int>
+    public class DeviceIterator<TDeviceInfo> : IEnumerable<(int DeviceId, TDeviceInfo DeviceInfo)>
         where TDeviceInfo : struct, IZWODeviceInfo
     {
-        public IEnumerator<int> GetEnumerator()
+        public IEnumerator<(int DeviceId, TDeviceInfo DeviceInfo)> GetEnumerator()
         {
             var count = DeviceCount();
 
             for (var index = 0; index < count; index++)
             {
-                var id = GetId(index);
-                if (id.HasValue)
+                var (id, info) = GetId(index);
+                if (id.HasValue && info.HasValue)
                 {
-                    yield return id.Value;
+                    yield return (id.Value, info.Value);
                 }
             }
         }
@@ -46,24 +46,33 @@ namespace ZWOptical.SDK
             return 0;
         }
 
-        int? GetId(int index)
+        (int? DeviceId, TDeviceInfo? DeviceInfo) GetId(int index)
         {
             if (typeof(TDeviceInfo) == typeof(ASI_CAMERA_INFO))
             {
-                return ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS ? camInfo.CameraID : null as int?;
+                if (ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS)
+                {
+                    return (camInfo.CameraID, (TDeviceInfo)(object)camInfo);
+                }
             }
             else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
             {
-                return EAFGetID(index, out var eafId) is EAF_SUCCESS
-                    && EAFGetProperty(eafId, out var eafInfo) is EAF_SUCCESS && eafInfo.ID == eafId ? eafId : null as int?;
+                if (EAFGetID(index, out var eafId) is EAF_SUCCESS
+                    && EAFGetProperty(eafId, out var eafInfo) is EAF_SUCCESS && eafInfo.ID == eafId)
+                {
+                    return (eafInfo.ID,  (TDeviceInfo)(object)eafInfo);
+                }
             }
             else if (typeof(TDeviceInfo) == typeof(EFW_INFO))
             {
-                return EFWGetID(index, out var efwId) is EFW_SUCCESS
-                    && EFWGetProperty(efwId, out var efwInfo) is EFW_SUCCESS && efwInfo.ID == efwId ? efwId : null as int?;
+                if (EFWGetID(index, out var efwId) is EFW_SUCCESS
+                    && EFWGetProperty(efwId, out var efwInfo) is EFW_SUCCESS && efwInfo.ID == efwId)
+                {
+                    return (efwInfo.ID, (TDeviceInfo)(object)efwInfo);
+                }
             }
 
-            return null;
+            return (null, null);
         }
     }
 }
