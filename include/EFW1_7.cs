@@ -9,17 +9,17 @@ namespace ZWOptical.SDK
         public enum EFW_ERROR_CODE
         {
             EFW_SUCCESS = 0,
-	        EFW_ERROR_INVALID_INDEX,
-	        EFW_ERROR_INVALID_ID,
-	        EFW_ERROR_INVALID_VALUE,
-	        EFW_ERROR_REMOVED, 
-	        EFW_ERROR_MOVING,
-	        EFW_ERROR_ERROR_STATE,
-	        EFW_ERROR_GENERAL_ERROR,//other error
-	        EFW_ERROR_END = -1
+            EFW_ERROR_INVALID_INDEX,
+            EFW_ERROR_INVALID_ID,
+            EFW_ERROR_INVALID_VALUE,
+            EFW_ERROR_REMOVED, 
+            EFW_ERROR_MOVING,
+            EFW_ERROR_ERROR_STATE,
+            EFW_ERROR_GENERAL_ERROR,//other error
+            EFW_ERROR_END = -1
         }
 
-     	[StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct EFW_INFO : IZWODeviceInfo
         {
             private int _id;
@@ -38,6 +38,8 @@ namespace ZWOptical.SDK
             public SDK_ID? SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn : null as SDK_ID?;
 
             public bool IsUSB3Device => false;
+
+            public string CustomId => Name;
         };
 
         const string EFWSharedLib = "EFW1.7";

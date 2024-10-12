@@ -63,6 +63,8 @@ namespace ZWOptical.SDK
             public SDK_ID? SerialNumber => EAFGetSerialNumber(ID, out var sn) is EAF_ERROR_CODE.EAF_SUCCESS ? sn : null as SDK_ID?;
 
             public bool IsUSB3Device => false;
+
+            public string CustomId => Name;
         }
 
         const string EAFSharedLib = "EAFFocuser1.6";

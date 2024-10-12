@@ -9,6 +9,6 @@ namespace ZWOptical.SDK
         [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8)]
         private byte[] _id;
 
-        public string ID => Encoding.ASCII.GetString(_id).TrimEnd((char)0);
+        public override string ToString() => Encoding.ASCII.GetString(_id).TrimEnd((char)0);
     }
 }

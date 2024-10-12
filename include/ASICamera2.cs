@@ -99,18 +99,18 @@ namespace ZWOptical.SDK
         public enum ASI_FLIP_STATUS
         {
             ASI_FLIP_NONE = 0,//: original
-            ASI_FLIP_HORIZ,//: horizontal flip
-            ASI_FLIP_VERT,// vertical flip
-            ASI_FLIP_BOTH,//:both horizontal and vertical flip
+            ASI_FLIP_HORIZ,   //: horizontal flip
+            ASI_FLIP_VERT,    //: vertical flip
+            ASI_FLIP_BOTH,    //: both horizontal and vertical flip
 
         };
         public struct ASI_CAMERA_INFO : IZWODeviceInfo
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] _name;// char[64]; //the name of the camera, you can display this to the UI
-            public int CameraID; //this is used to control everything of the camera in other functions
-            public int MaxHeight; //the max height of the camera
-            public int MaxWidth;	//the max width of the camera
+            private byte[] _name;  // char[64]; //the name of the camera, you can display this to the UI
+            public int CameraID;   // this is used to control everything of the camera in other functions
+            public int MaxHeight;  // the max height of the camera
+            public int MaxWidth;   // the max width of the camera
 
             public ASI_BOOL IsColorCam;
             public ASI_BAYER_PATTERN BayerPattern;
@@ -151,6 +151,23 @@ namespace ZWOptical.SDK
             public SDK_ID? SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn : null as SDK_ID?;
 
             public bool IsUSB3Device => IsUSB3Camera is ASI_BOOL.ASI_TRUE;
+
+            public string CustomId
+            {
+                get
+                {
+                    if (ASIGetID(ID, out var id) is ASI_ERROR_CODE.ASI_SUCCESS)
+                    {
+                        var idString = id.ToString();
+                        if (idString.Length > 0)
+                        {
+                            return idString;
+                        }
+                    }
+
+                    return Name;
+                }
+            }
         };
 
         [StructLayout(LayoutKind.Sequential)]

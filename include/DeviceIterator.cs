@@ -52,7 +52,7 @@ namespace ZWOptical.SDK
             {
                 if (ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS)
                 {
-                    return (camInfo.CameraID, (TDeviceInfo)(object)camInfo);
+                    return (camInfo.CameraID, (TDeviceInfo)(IZWODeviceInfo)camInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
@@ -60,7 +60,7 @@ namespace ZWOptical.SDK
                 if (EAFGetID(index, out var eafId) is EAF_SUCCESS
                     && EAFGetProperty(eafId, out var eafInfo) is EAF_SUCCESS && eafInfo.ID == eafId)
                 {
-                    return (eafInfo.ID,  (TDeviceInfo)(object)eafInfo);
+                    return (eafInfo.ID,  (TDeviceInfo)(IZWODeviceInfo)eafInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EFW_INFO))
@@ -68,7 +68,7 @@ namespace ZWOptical.SDK
                 if (EFWGetID(index, out var efwId) is EFW_SUCCESS
                     && EFWGetProperty(efwId, out var efwInfo) is EFW_SUCCESS && efwInfo.ID == efwId)
                 {
-                    return (efwInfo.ID, (TDeviceInfo)(object)efwInfo);
+                    return (efwInfo.ID, (TDeviceInfo)(IZWODeviceInfo)efwInfo);
                 }
             }
 
