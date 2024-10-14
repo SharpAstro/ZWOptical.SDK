@@ -24,12 +24,12 @@ namespace ZWOptical.SDK
         {
             private int _id;
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] name;
+            private byte[] _name;
             public int slotNum;
 
             public int ID => _id;
 
-            public string Name => Encoding.ASCII.GetString(name).TrimEnd((char)0);
+            public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
             public bool Open() => EFWOpen(ID) is EFW_ERROR_CODE.EFW_SUCCESS;
 

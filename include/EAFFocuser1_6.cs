@@ -43,6 +43,7 @@ namespace ZWOptical.SDK
             EAF_ERROR_END = -1
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct EAF_INFO : IZWODeviceInfo
         {
             private int _id;

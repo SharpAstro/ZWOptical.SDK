@@ -104,6 +104,8 @@ namespace ZWOptical.SDK
             ASI_FLIP_BOTH,    //: both horizontal and vertical flip
 
         };
+
+        [StructLayout(LayoutKind.Sequential)]
         public struct ASI_CAMERA_INFO : IZWODeviceInfo
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
