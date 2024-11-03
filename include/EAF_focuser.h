@@ -38,7 +38,7 @@ typedef enum _EAF_ERROR_CODE{
 
 typedef struct _EAF_ID{
 	unsigned char id[8];
-}EAF_ID;
+} EAF_ID;
 
 typedef EAF_ID EAF_SN;
 

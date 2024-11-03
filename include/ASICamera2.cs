@@ -176,9 +176,9 @@ namespace ZWOptical.SDK
         public struct ASI_CONTROL_CAPS
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            public byte[] name; //the name of the Control like Exposure, Gain etc..
+            private byte[] _name; //the name of the Control like Exposure, Gain etc..
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 128)]
-            public byte[] description; //description of this control
+            private byte[] _description; //description of this control
             public int MaxValue;
             public int MinValue;
             public int DefaultValue;
@@ -186,17 +186,11 @@ namespace ZWOptical.SDK
             public ASI_BOOL IsWritable; //some control like temperature can only be read by some cameras
             public ASI_CONTROL_TYPE ControlType;//this is used to get value and set value of the control
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 32)]
-            public byte[] Unused;//[32];
+            private byte[] _unused;//[32];
 
-            public string Name
-            {
-                get { return Encoding.ASCII.GetString(name).TrimEnd((Char)0); }
-            }
+            public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
-            public string Description
-            {
-                get { return Encoding.ASCII.GetString(description).TrimEnd((Char)0); }
-            }
+            public string Description => Encoding.ASCII.GetString(_description).TrimEnd((char)0);
         }
 
         public enum ASI_CAMERA_MODE
@@ -248,6 +242,46 @@ namespace ZWOptical.SDK
         [DllImport("ASICamera2", EntryPoint = "ASIGetControlValue", CallingConvention = CallingConvention.Cdecl)]
         private static extern ASI_ERROR_CODE ASIGetControlValueImpl(int iCameraID, ASI_CONTROL_TYPE ControlType, out int plValue, out ASI_BOOL pbAuto);
 
+        /// <summary>
+        /// set the ROI area before capture.
+        /// you must stop capture before call it.
+        /// the width and height is the value after binning.
+        /// ie.you need to set width to 640 and height to 480 if you want to run at 640X480 @BIN2
+        /// ASI120's data size must be times of 1024 which means <code>width*height%1024=0</code>
+        /// </summary>
+        /// <param name="iCameraID">camera identifier</param>
+        /// <param name="iWidth">the width of the ROI area. Make sure <code>iWidth % 8 == 0.</code></param>
+        /// <param name="iHeight">the height of the ROI area. Make sure <code>iHeight % 2 == 0</code></param>
+        /// <param name="iBin">binning method. bin1=1, bin2=2</param>
+        /// <param name="Img_type">image output format</param>
+        /// <returns>
+        ///   <list type="table">
+        ///     <listheader>
+        ///       <term>Return code</term>
+        ///       <description>reason</description>
+        ///     </listheader>
+        ///     <item>
+        ///       <term>ASI_SUCCESS</term>
+        ///       <description>Operation is successful</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_CAMERA_CLOSED</term>
+        ///       <description>camera did not open</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_INVALID_ID</term>
+        ///       <description>no camera of this ID is connected or ID value is out of boundary</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_INVALID_SIZE</term>
+        ///       <description>wrong video format size</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_INVALID_IMGTYPE</term>
+        ///       <description>unsupported image format, make sure iWidth and iHeight and binning is set correct</description>
+        ///     </item>
+        ///   </list>
+        /// </returns>
         [DllImport("ASICamera2", EntryPoint = "ASISetROIFormat", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE ASISetROIFormat(int iCameraID, int iWidth, int iHeight, int iBin, ASI_IMG_TYPE Img_type);
 
@@ -260,6 +294,39 @@ namespace ZWOptical.SDK
         [DllImport("ASICamera2", EntryPoint = "ASIGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE  ASIGetSerialNumber(int iCameraID, out SDK_ID pSN);
 
+        /// <summary>
+        /// Set the start position of the ROI area.
+        /// you can call this API to move the ROI area when video is streaming
+        /// the camera will set the ROI area to the center of the full image as default
+        /// at bin2 or bin3 mode, the position is relative to the image after binning
+        /// </summary>
+        /// <param name="iCameraID">camera identifier</param>
+        /// <param name="iStartX">start X of ROI (in binned pixels)</param>
+        /// <param name="iStartY">start Y of ROI (in binned pixels)</param>
+        /// <returns>
+        ///   <list type="table">
+        ///     <listheader>
+        ///       <term>Return code</term>
+        ///       <description>reason</description>
+        ///     </listheader>
+        ///     <item>
+        ///       <term>ASI_SUCCESS</term>
+        ///       <description>Operation is successful</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_CAMERA_CLOSED</term>
+        ///       <description>camera did not open</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_INVALID_ID</term>
+        ///       <description>no camera of this ID is connected or ID value is out of boundary</description>
+        ///     </item>
+        ///     <item>
+        ///       <term>ASI_ERROR_OUTOF_BOUNDARY</term>
+        ///       <description>the start x and start y make the image out of boundary</description>
+        ///     </item>
+        ///   </list>
+        /// </returns>
         [DllImport("ASICamera2", EntryPoint = "ASISetStartPos", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE ASISetStartPos(int iCameraID, int iStartX, int iStartY);
 
