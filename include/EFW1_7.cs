@@ -65,7 +65,21 @@ namespace ZWOptical.SDK
         [DllImport(EFWSharedLib, EntryPoint = "EFWClose", CallingConvention = CallingConvention.Cdecl)]
         public static extern EFW_ERROR_CODE EFWClose(int ID);
       
-
+        /// <summary>
+        /// get position of slot
+        /// </summary>
+        /// <param name="ID">the ID of filter wheel</param>
+        /// <param name="pPosition">pointer to slot position, this value is between 0 to M - 1, M is slot number and -1 if filter wheel is moving</param>
+        /// <returns>
+        /// <list type="table">
+        ///   <listheader><term>Code</term><description>Meaning</description></listheader>
+        ///   <item><term>EFW_ERROR_INVALID_ID</term><description>invalid ID value</description></item>
+        ///   <item><term>EFW_ERROR_CLOSED</term><description>filter wheel disconnected/not opened</description></item>
+        ///   <item><term>EFW_ERROR_REMOVED</term><description>filter wheel is removed</description></item>
+        ///   <item><term>EFW_ERROR_REMOVED</term><description>focuser is removed</description></item>
+        ///   <item><term>EFW_ERROR_ERROR_STATE</term><description>operation succeeds</description></item>
+        /// </list>
+        /// </returns>
         [DllImport(EFWSharedLib, EntryPoint = "EFWGetPosition", CallingConvention = CallingConvention.Cdecl)]
         public static extern EFW_ERROR_CODE EFWGetPosition(int ID, out int pPosition);
       
