@@ -4,10 +4,10 @@ using System.Text;
 
 namespace ZWOptical.SDK
 {
-    public struct SDK_ID
+    public readonly struct ZWO_ID
     {
         [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 8)]
-        private byte[] _id;
+        private readonly byte[] _id;
 
         public override string ToString() => Encoding.ASCII.GetString(_id).TrimEnd((char)0);
     }

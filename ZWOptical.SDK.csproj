@@ -1,51 +1,57 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>ZWOptical.SDK</RootNamespace>
-    <AssemblyName>ZWOptical.SDK</AssemblyName>
-    <PackageLicenseFile>license.txt</PackageLicenseFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>ZWOptical.SDK</PackageId>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>Astronomy,ZWO,ASI</PackageTags>
-    <RepositoryUrl>https://github.com/SharpAstro/ZWOptical.SDK</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/SharpAstro/ZWOptical.SDK</PackageProjectUrl>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<RootNamespace>ZWOptical.SDK</RootNamespace>
+	<AssemblyName>ZWOptical.SDK</AssemblyName>
+	<PackageLicenseFile>license.txt</PackageLicenseFile>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<DebugType>embedded</DebugType>
+	<PackageId>ZWOptical.SDK</PackageId>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageTags>Astronomy,ZWO,ASI</PackageTags>
+	<RepositoryUrl>https://github.com/SharpAstro/ZWOptical.SDK</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/SharpAstro/ZWOptical.SDK</PackageProjectUrl>
+	<Description>Implements accessing the ZWO ASI, EAF and EFW devices using .NET (standard)</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+	<CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+	<CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="demo/**" />
-    <EmbeddedResource Remove="demo/**" />
-    <None Remove="demo/**" />
+	<Compile Remove="demo/**" />
+	<EmbeddedResource Remove="demo/**" />
+	<None Remove="demo/**" />
 
-    <None Include="license.txt" PackagePath="" Pack="True" />
-    <None Include="README.md" PackagePath="" Pack="true" />
-    <None Include="lib/x86/libASICamera2.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
-    <None Include="lib/x86/libEAFFocuser1.6.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
-    <None Include="lib/x86/libEFW1.7.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
-    <None Include="lib/x86/ASICamera2.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
-    <None Include="lib/x86/EAFFocuser1.6.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
-    <None Include="lib/x86/EFW1.7.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
-    <None Include="lib/x64/libASICamera2.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
-    <None Include="lib/x64/libEAFFocuser1.6.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
-    <None Include="lib/x64/libEFW1.7.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
-    <None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
-    <None Include="lib/x64/EAFFocuser1.6.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
-    <None Include="lib/x64/EFW1.7.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
-    <None Include="lib/armv7/libASICamera2.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
-    <None Include="lib/armv7/libEAFFocuser1.6.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
-    <None Include="lib/armv7/libEFW1.7.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
-    <None Include="lib/armv8/libASICamera2.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
-    <None Include="lib/armv8/libEAFFocuser1.6.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
-    <None Include="lib/armv8/libEFW1.7.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="license.txt" PackagePath="" Pack="True" />
+	<None Include="README.md" PackagePath="" Pack="true" />
+	<None Include="lib/x86/libASICamera2.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
+	<None Include="lib/x86/libEAFFocuser1.6.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
+	<None Include="lib/x86/libEFW1.7.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
+	<None Include="lib/x86/ASICamera2.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
+	<None Include="lib/x86/EAFFocuser1.6.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
+	<None Include="lib/x86/EFW1.7.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
+	<None Include="lib/x64/libASICamera2.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+	<None Include="lib/x64/libEAFFocuser1.6.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+	<None Include="lib/x64/libEFW1.7.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+	<None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
+	<None Include="lib/x64/EAFFocuser1.6.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
+	<None Include="lib/x64/EFW1.7.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
+	<None Include="lib/armv7/libASICamera2.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+	<None Include="lib/armv7/libEAFFocuser1.6.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+	<None Include="lib/armv7/libEFW1.7.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+	<None Include="lib/armv8/libASICamera2.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="lib/armv8/libEAFFocuser1.6.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="lib/armv8/libEFW1.7.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="TianWen.DAL" Version="1.0.31" />
   </ItemGroup>
 
 </Project>

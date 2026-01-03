@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using TianWen.DAL;
 using static ZWOptical.SDK.ASICamera2;
 using static ZWOptical.SDK.ASICamera2.ASI_ERROR_CODE;
 using static ZWOptical.SDK.EAFFocuser1_6;
@@ -9,26 +8,10 @@ using static ZWOptical.SDK.EFW1_7.EFW_ERROR_CODE;
 
 namespace ZWOptical.SDK
 {
-    public class DeviceIterator<TDeviceInfo> : IEnumerable<(int DeviceId, TDeviceInfo DeviceInfo)>
-        where TDeviceInfo : struct, IZWODeviceInfo
+    public class DeviceIterator<TDeviceInfo> : NativeDeviceIteratorBase<TDeviceInfo, ZWO_ID>
+        where TDeviceInfo : struct, INativeDeviceInfo<ZWO_ID>
     {
-        public IEnumerator<(int DeviceId, TDeviceInfo DeviceInfo)> GetEnumerator()
-        {
-            var count = DeviceCount();
-
-            for (var index = 0; index < count; index++)
-            {
-                var (id, info) = GetId(index);
-                if (id.HasValue && info.HasValue)
-                {
-                    yield return (id.Value, info.Value);
-                }
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        int DeviceCount()
+        protected override int DeviceCount()
         {
             if (typeof(TDeviceInfo) == typeof(ASI_CAMERA_INFO))
             {
@@ -46,13 +29,13 @@ namespace ZWOptical.SDK
             return 0;
         }
 
-        (int? DeviceId, TDeviceInfo? DeviceInfo) GetId(int index)
+        protected override (int? DeviceId, TDeviceInfo? DeviceInfo) GetId(int index)
         {
             if (typeof(TDeviceInfo) == typeof(ASI_CAMERA_INFO))
             {
                 if (ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS)
                 {
-                    return (camInfo.CameraID, (TDeviceInfo)(IZWODeviceInfo)camInfo);
+                    return (camInfo.CameraID, (TDeviceInfo)(INativeDeviceInfo<ZWO_ID>)camInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
@@ -60,7 +43,7 @@ namespace ZWOptical.SDK
                 if (EAFGetID(index, out var eafId) is EAF_SUCCESS
                     && EAFGetProperty(eafId, out var eafInfo) is EAF_SUCCESS && eafInfo.ID == eafId)
                 {
-                    return (eafInfo.ID,  (TDeviceInfo)(IZWODeviceInfo)eafInfo);
+                    return (eafInfo.ID,  (TDeviceInfo)(INativeDeviceInfo<ZWO_ID>)eafInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EFW_INFO))
@@ -68,7 +51,7 @@ namespace ZWOptical.SDK
                 if (EFWGetID(index, out var efwId) is EFW_SUCCESS
                     && EFWGetProperty(efwId, out var efwInfo) is EFW_SUCCESS && efwInfo.ID == efwId)
                 {
-                    return (efwInfo.ID, (TDeviceInfo)(IZWODeviceInfo)efwInfo);
+                    return (efwInfo.ID, (TDeviceInfo)(INativeDeviceInfo<ZWO_ID>)efwInfo);
                 }
             }
 

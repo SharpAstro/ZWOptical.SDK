@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using TianWen.DAL;
 
 namespace ZWOptical.SDK
 {
@@ -44,12 +45,12 @@ namespace ZWOptical.SDK
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct EAF_INFO : IZWODeviceInfo
+        public struct EAF_INFO : INativeDeviceInfo<ZWO_ID>
         {
-            private int _id;
+            private readonly int _id;
 
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] _name;
+            private readonly byte[] _name;
 
             public int MaxStep;//fixed maximum position
 
@@ -61,7 +62,7 @@ namespace ZWOptical.SDK
 
             public bool Close() => EAFClose(ID) is  EAF_ERROR_CODE.EAF_SUCCESS;
 
-            public SDK_ID? SerialNumber => EAFGetSerialNumber(ID, out var sn) is EAF_ERROR_CODE.EAF_SUCCESS ? sn : null as SDK_ID?;
+            public ZWO_ID? SerialNumber => EAFGetSerialNumber(ID, out var sn) is EAF_ERROR_CODE.EAF_SUCCESS ? sn : null as ZWO_ID?;
 
             public bool IsUSB3Device => false;
 
@@ -98,7 +99,7 @@ namespace ZWOptical.SDK
         /// </list>
         /// </returns>  
         [DllImport(EAFSharedLib, EntryPoint = "EAFSetID", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EAF_ERROR_CODE EAFSetID(int ID, SDK_ID alias);
+        public static extern EAF_ERROR_CODE EAFSetID(int ID, ZWO_ID alias);
 
         /// <summary>
         /// Check if the device is EAF.
@@ -224,7 +225,7 @@ namespace ZWOptical.SDK
         /// </list>
         /// </returns>
         [DllImport(EAFSharedLib, EntryPoint = "EAFGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EAF_ERROR_CODE EAFGetSerialNumber(int ID, out SDK_ID serialNumber);
+        public static extern EAF_ERROR_CODE EAFGetSerialNumber(int ID, out ZWO_ID serialNumber);
 
         /// <summary>
         /// Move focuser to an absolute position.

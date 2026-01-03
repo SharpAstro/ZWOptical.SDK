@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using TianWen.DAL;
 
 namespace ZWOptical.SDK
 {
@@ -106,10 +107,10 @@ namespace ZWOptical.SDK
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct ASI_CAMERA_INFO : IZWODeviceInfo
+        public struct ASI_CAMERA_INFO : INativeDeviceInfo<ZWO_ID>
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] _name;  // char[64]; //the name of the camera, you can display this to the UI
+            private readonly byte[] _name;  // char[64]; //the name of the camera, you can display this to the UI
             public int CameraID;   // this is used to control everything of the camera in other functions
             public int MaxHeight;  // the max height of the camera
             public int MaxWidth;   // the max width of the camera
@@ -139,7 +140,6 @@ namespace ZWOptical.SDK
             public ASI_BOOL IsTriggerCam;
 
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Native struct padding")]
             private readonly byte[] _unused;
 
             public int ID => CameraID;
@@ -150,7 +150,7 @@ namespace ZWOptical.SDK
 
             public bool Close() => ASICloseCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
 
-            public SDK_ID? SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn : null as SDK_ID?;
+            public ZWO_ID? SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn : null as ZWO_ID?;
 
             public bool IsUSB3Device => IsUSB3Camera is ASI_BOOL.ASI_TRUE;
 
@@ -176,9 +176,9 @@ namespace ZWOptical.SDK
         public struct ASI_CONTROL_CAPS
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] _name; //the name of the Control like Exposure, Gain etc..
+            private readonly byte[] _name; //the name of the Control like Exposure, Gain etc..
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 128)]
-            private byte[] _description; //description of this control
+            private readonly byte[] _description; //description of this control
             public int MaxValue;
             public int MinValue;
             public int DefaultValue;
@@ -186,7 +186,7 @@ namespace ZWOptical.SDK
             public ASI_BOOL IsWritable; //some control like temperature can only be read by some cameras
             public ASI_CONTROL_TYPE ControlType;//this is used to get value and set value of the control
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 32)]
-            private byte[] _unused;//[32];
+            private readonly byte[] _unused;//[32];
 
             public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
@@ -292,7 +292,7 @@ namespace ZWOptical.SDK
         private static extern IntPtr ASIGetSDKVersionImpl();
 
         [DllImport("ASICamera2", EntryPoint = "ASIGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ASI_ERROR_CODE  ASIGetSerialNumber(int iCameraID, out SDK_ID pSN);
+        public static extern ASI_ERROR_CODE  ASIGetSerialNumber(int iCameraID, out ZWO_ID pSN);
 
         /// <summary>
         /// Set the start position of the ROI area.
@@ -364,10 +364,10 @@ namespace ZWOptical.SDK
         public static extern ASI_ERROR_CODE ASIGetGainOffset(int iCameraID, out int Offset_HighestDR, out int Offset_UnityGain, out int Gain_LowestRN, out int Offset_LowestRN);
 
         [DllImport("ASICamera2", EntryPoint = "ASIGetID", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ASI_ERROR_CODE ASIGetID(int iCameraID, out SDK_ID pID);
+        public static extern ASI_ERROR_CODE ASIGetID(int iCameraID, out ZWO_ID pID);
 
         [DllImport("ASICamera2", EntryPoint = "ASISetID", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ASI_ERROR_CODE ASISetID(int iCameraID, SDK_ID ID);
+        public static extern ASI_ERROR_CODE ASISetID(int iCameraID, ZWO_ID ID);
 
         /// <summary>
         /// Starts an exposure with an open <see cref="ASI_CAMERA_INFO.MechanicalShutter"/> (i.e. a light exposure).

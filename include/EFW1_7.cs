@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using TianWen.DAL;
 
 namespace ZWOptical.SDK
 {
@@ -20,14 +21,16 @@ namespace ZWOptical.SDK
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct EFW_INFO : IZWODeviceInfo
+        public readonly struct EFW_INFO : INativeDeviceInfo<ZWO_ID>
         {
-            private int _id;
+            private readonly int _id;
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
-            private byte[] _name;
-            public int slotNum;
+            private readonly byte[] _name;
+            private readonly int _slotNum;
 
             public int ID => _id;
+
+            public int NumberOfSlots => _slotNum;
 
             public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
@@ -35,7 +38,7 @@ namespace ZWOptical.SDK
 
             public bool Close() => EFWClose(ID) is  EFW_ERROR_CODE.EFW_SUCCESS;
 
-            public SDK_ID? SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn : null as SDK_ID?;
+            public ZWO_ID? SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn : null as ZWO_ID?;
 
             public bool IsUSB3Device => false;
 
@@ -98,9 +101,9 @@ namespace ZWOptical.SDK
         public static extern EFW_ERROR_CODE EFWGetFirmwareVersion(int ID, out byte pbMajor, out byte pbMinor, out byte pbBuild);
 
         [DllImport(EFWSharedLib, EntryPoint = "EFWGetSerialNumber", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EFW_ERROR_CODE EFWGetSerialNumber(int ID, out SDK_ID sn);
+        public static extern EFW_ERROR_CODE EFWGetSerialNumber(int ID, out ZWO_ID sn);
 
         [DllImport(EFWSharedLib, EntryPoint = "EFWSetID", CallingConvention = CallingConvention.Cdecl)]
-        public static extern EFW_ERROR_CODE EFWSetID(int ID, SDK_ID alias);
+        public static extern EFW_ERROR_CODE EFWSetID(int ID, ZWO_ID alias);
     }
 }
