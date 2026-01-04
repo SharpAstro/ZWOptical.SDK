@@ -182,7 +182,39 @@ namespace ZWOptical.SDK
 
             public IReadOnlyList<int> SupportedBins => _supportedBins;
 
+            public IReadOnlyList<PixelDataFormat> SupportedPixelDataFormats
+            {
+                get
+                {
+                    var list = new List<PixelDataFormat>(_supportedVideoFormat.Length);
+
+                    for (var i = 0; i < _supportedVideoFormat.Length; i++)
+                    {
+                        if (_supportedVideoFormat[i] is ASI_IMG_TYPE.ASI_IMG_END)
+                        {
+                            break;
+                        }
+
+                        PixelDataFormat format;
+                        switch (_supportedVideoFormat[i])
+                        {
+                            case ASI_IMG_TYPE.ASI_IMG_RAW8: format = PixelDataFormat.RAW8; break;
+                            case ASI_IMG_TYPE.ASI_IMG_RGB24: format = PixelDataFormat.RGB24; break;
+                            case ASI_IMG_TYPE.ASI_IMG_RAW16: format = PixelDataFormat.RAW16; break;
+                            case ASI_IMG_TYPE.ASI_IMG_Y8: format = PixelDataFormat.Y8; break;
+                            default: throw new NotSupportedException($"Unsupported image type: {_supportedVideoFormat[i]}");
+                        }
+
+                        list[i] = format;
+                    }
+
+                    return list;
+                }
+            }
+
             public bool HasMechanicalShutter => _mechanicalShutter is ASI_BOOL.ASI_TRUE;
+
+            public bool HasCooler => _isCoolerCam is ASI_BOOL.ASI_TRUE;
 
             public bool HasST4Port => _st4Port is ASI_BOOL.ASI_TRUE;
 
