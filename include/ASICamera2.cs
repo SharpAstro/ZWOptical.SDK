@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using TianWen.DAL;
@@ -107,42 +108,42 @@ namespace ZWOptical.SDK
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct ASI_CAMERA_INFO : INativeDeviceInfo
+        public readonly struct ASI_CAMERA_INFO : INativeCMOSDeviceInfo
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
             private readonly byte[] _name;  // char[64]; //the name of the camera, you can display this to the UI
-            public int CameraID;   // this is used to control everything of the camera in other functions
-            public int MaxHeight;  // the max height of the camera
-            public int MaxWidth;   // the max width of the camera
+            private readonly int _cameraID;   // this is used to control everything of the camera in other functions
+            private readonly int _maxHeight;  // the max height of the camera
+            private readonly int _maxWidth;   // the max width of the camera
 
-            public ASI_BOOL IsColorCam;
-            public ASI_BAYER_PATTERN BayerPattern;
+            private readonly ASI_BOOL _isColorCam;
+            private readonly ASI_BAYER_PATTERN _bayerPattern;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            public int[] SupportedBins;// int[16]; //1 means bin1 which is supported by every camera, 2 means bin 2 etc.. 0 is the end of supported binning method
+            private readonly int[] _supportedBins;// int[16]; //1 means bin1 which is supported by every camera, 2 means bin 2 etc.. 0 is the end of supported binning method
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public ASI_IMG_TYPE[] SupportedVideoFormat;// ASI_IMG_TYPE[8]; //this array will content with the support output format type.IMG_END is the end of supported video format
+            private readonly ASI_IMG_TYPE[] _supportedVideoFormat;// ASI_IMG_TYPE[8]; //this array will content with the support output format type.IMG_END is the end of supported video format
 
-            public double PixelSize; //the pixel size of the camera, unit is um. such like 5.6um
-            public ASI_BOOL MechanicalShutter;
-            public ASI_BOOL ST4Port;
-            public ASI_BOOL IsCoolerCam;
-            public ASI_BOOL IsUSB3Host;
-            public ASI_BOOL IsUSB3Camera;
-            public float ElecPerADU;
+            private readonly double _pixelSize; //the pixel size of the camera, unit is um. such like 5.6um
+            private readonly ASI_BOOL _mechanicalShutter;
+            private readonly ASI_BOOL _st4Port;
+            private readonly ASI_BOOL _isCoolerCam;
+            private readonly ASI_BOOL _isUSB3Host;
+            private readonly ASI_BOOL _isUSB3Camera;
+            private readonly float _elecPerADU;
 
             /// <summary>
             /// Actual bit depth
             /// </summary>
-            public int BitDepth;
+            private readonly int _bitDepth;
 
-            public ASI_BOOL IsTriggerCam;
+            private readonly ASI_BOOL _isTriggerCam;
 
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 16)]
             private readonly byte[] _unused;
 
-            public int ID => CameraID;
+            public int ID => _cameraID;
 
             public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
@@ -152,7 +153,48 @@ namespace ZWOptical.SDK
 
             public string SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn.ToString() : null;
 
-            public bool IsUSB3Device => IsUSB3Camera is ASI_BOOL.ASI_TRUE;
+            public bool IsUSB3Device => _isUSB3Camera is ASI_BOOL.ASI_TRUE;
+
+            public bool IsTriggerCamera => _isTriggerCam is ASI_BOOL.ASI_TRUE;
+
+            public BayerPattern BayerPattern
+            {
+                get
+                {
+                    if (_isColorCam is ASI_BOOL.ASI_TRUE)
+                    {
+                        switch (_bayerPattern)
+                        {
+                            case ASI_BAYER_PATTERN.ASI_BAYER_RG: return BayerPattern.RGGB;
+                            case ASI_BAYER_PATTERN.ASI_BAYER_BG: return BayerPattern.BGGR;
+                            case ASI_BAYER_PATTERN.ASI_BAYER_GR: return BayerPattern.GRBG;
+                            case ASI_BAYER_PATTERN.ASI_BAYER_GB: return BayerPattern.GBRG;
+                            default:
+                                throw new NotSupportedException($"Unsupported Bayer pattern: {_bayerPattern}");
+                        }
+                    }
+                    else
+                    {
+                        return BayerPattern.Monochrome;
+                    }
+                }
+            }
+
+            public IReadOnlyList<int> SupportedBins => _supportedBins;
+
+            public bool HasMechanicalShutter => _mechanicalShutter is ASI_BOOL.ASI_TRUE;
+
+            public bool HasST4Port => _st4Port is ASI_BOOL.ASI_TRUE;
+
+            public int MaxWidth => _maxWidth;
+
+            public int MaxHeight => _maxHeight;
+
+            public int BitDepth => _bitDepth;
+
+            public double ElectronPerADU => _elecPerADU;
+
+            public double PixelSize => _pixelSize;
 
             public string CustomId
             {

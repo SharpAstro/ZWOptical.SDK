@@ -35,7 +35,7 @@ namespace ZWOptical.SDK
             {
                 if (ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS)
                 {
-                    return (camInfo.CameraID, (TDeviceInfo)(INativeDeviceInfo)camInfo);
+                    return (camInfo.ID, (TDeviceInfo)(INativeDeviceInfo)camInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
