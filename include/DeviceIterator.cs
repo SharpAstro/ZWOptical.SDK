@@ -8,8 +8,8 @@ using static ZWOptical.SDK.EFW1_7.EFW_ERROR_CODE;
 
 namespace ZWOptical.SDK
 {
-    public class DeviceIterator<TDeviceInfo> : NativeDeviceIteratorBase<TDeviceInfo, ZWO_ID>
-        where TDeviceInfo : struct, INativeDeviceInfo<ZWO_ID>
+    public class DeviceIterator<TDeviceInfo> : NativeDeviceIteratorBase<TDeviceInfo>
+        where TDeviceInfo : struct, INativeDeviceInfo
     {
         protected override int DeviceCount()
         {
@@ -35,7 +35,7 @@ namespace ZWOptical.SDK
             {
                 if (ASIGetCameraProperty(out var camInfo, index) is ASI_SUCCESS)
                 {
-                    return (camInfo.CameraID, (TDeviceInfo)(INativeDeviceInfo<ZWO_ID>)camInfo);
+                    return (camInfo.CameraID, (TDeviceInfo)(INativeDeviceInfo)camInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EAF_INFO))
@@ -43,7 +43,7 @@ namespace ZWOptical.SDK
                 if (EAFGetID(index, out var eafId) is EAF_SUCCESS
                     && EAFGetProperty(eafId, out var eafInfo) is EAF_SUCCESS && eafInfo.ID == eafId)
                 {
-                    return (eafInfo.ID,  (TDeviceInfo)(INativeDeviceInfo<ZWO_ID>)eafInfo);
+                    return (eafInfo.ID,  (TDeviceInfo)(INativeDeviceInfo)eafInfo);
                 }
             }
             else if (typeof(TDeviceInfo) == typeof(EFW_INFO))
@@ -51,7 +51,7 @@ namespace ZWOptical.SDK
                 if (EFWGetID(index, out var efwId) is EFW_SUCCESS
                     && EFWGetProperty(efwId, out var efwInfo) is EFW_SUCCESS && efwInfo.ID == efwId)
                 {
-                    return (efwInfo.ID, (TDeviceInfo)(INativeDeviceInfo<ZWO_ID>)efwInfo);
+                    return (efwInfo.ID, (TDeviceInfo)(INativeDeviceInfo)efwInfo);
                 }
             }
 

@@ -21,7 +21,7 @@ namespace ZWOptical.SDK
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public readonly struct EFW_INFO : INativeDeviceInfo<ZWO_ID>
+        public readonly struct EFW_INFO : INativeDeviceInfo
         {
             private readonly int _id;
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
@@ -38,7 +38,7 @@ namespace ZWOptical.SDK
 
             public bool Close() => EFWClose(ID) is  EFW_ERROR_CODE.EFW_SUCCESS;
 
-            public ZWO_ID? SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn : null as ZWO_ID?;
+            public string SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn.ToString() : null;
 
             public bool IsUSB3Device => false;
 

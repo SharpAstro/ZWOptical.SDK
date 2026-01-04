@@ -107,7 +107,7 @@ namespace ZWOptical.SDK
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct ASI_CAMERA_INFO : INativeDeviceInfo<ZWO_ID>
+        public struct ASI_CAMERA_INFO : INativeDeviceInfo
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
             private readonly byte[] _name;  // char[64]; //the name of the camera, you can display this to the UI
@@ -150,7 +150,7 @@ namespace ZWOptical.SDK
 
             public bool Close() => ASICloseCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
 
-            public ZWO_ID? SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn : null as ZWO_ID?;
+            public string SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn.ToString() : null;
 
             public bool IsUSB3Device => IsUSB3Camera is ASI_BOOL.ASI_TRUE;
 
