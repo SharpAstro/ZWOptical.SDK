@@ -8,105 +8,6 @@ namespace ZWOptical.SDK
 {
     public static class ASICamera2
     {
-        public enum ASI_CONTROL_TYPE
-        {
-            ASI_GAIN = 0,
-            ASI_EXPOSURE,
-            ASI_GAMMA,
-            ASI_WB_R,
-            ASI_WB_B,
-            ASI_BRIGHTNESS,
-            ASI_BANDWIDTHOVERLOAD,
-            ASI_OVERCLOCK,
-            ASI_TEMPERATURE,// return 10*temperature
-            ASI_FLIP,
-            ASI_AUTO_MAX_GAIN,
-            ASI_AUTO_MAX_EXP,
-            ASI_AUTO_MAX_BRIGHTNESS,
-            ASI_HARDWARE_BIN,
-            ASI_HIGH_SPEED_MODE,
-            ASI_COOLER_POWER_PERC,
-            ASI_TARGET_TEMP,// not need *10
-            ASI_COOLER_ON,
-            ASI_MONO_BIN,
-            ASI_FAN_ON,
-            ASI_PATTERN_ADJUST,
-            ASI_ANTI_DEW_HEATER,
-            ASI_HUMIDITY,
-            ASI_ENABLE_DDR
-        }
-
-
-        public enum ASI_IMG_TYPE
-        {
-            //Supported image type
-            ASI_IMG_RAW8 = 0,
-            ASI_IMG_RGB24,
-            ASI_IMG_RAW16,
-            ASI_IMG_Y8,
-            ASI_IMG_END = -1
-        }
-
-
-        public enum ASI_GUIDE_DIRECTION
-        {
-            ASI_GUIDE_NORTH = 0,
-            ASI_GUIDE_SOUTH,
-            ASI_GUIDE_EAST,
-            ASI_GUIDE_WEST
-        }
-
-        public enum ASI_BAYER_PATTERN
-        {
-            ASI_BAYER_RG = 0,
-            ASI_BAYER_BG,
-            ASI_BAYER_GR,
-            ASI_BAYER_GB
-        };
-
-        public enum ASI_EXPOSURE_STATUS
-        {
-            ASI_EXP_IDLE = 0,//: idle states, you can start exposure now
-            ASI_EXP_WORKING,//: exposing
-            ASI_EXP_SUCCESS,// exposure finished and waiting for download
-            ASI_EXP_FAILED,//:exposure failed, you need to start exposure again
-        };
-
-        public enum ASI_ERROR_CODE
-        { //ASI ERROR CODE
-            ASI_SUCCESS = 0,
-            ASI_ERROR_INVALID_INDEX, //no camera connected or index value out of boundary
-            ASI_ERROR_INVALID_ID, //invalid ID
-            ASI_ERROR_INVALID_CONTROL_TYPE, //invalid control type
-            ASI_ERROR_CAMERA_CLOSED, //camera didn't open
-            ASI_ERROR_CAMERA_REMOVED, //failed to find the camera, maybe the camera has been removed
-            ASI_ERROR_INVALID_PATH, //cannot find the path of the file
-            ASI_ERROR_INVALID_FILEFORMAT,
-            ASI_ERROR_INVALID_SIZE, //wrong video format size
-            ASI_ERROR_INVALID_IMGTYPE, //unsupported image formate
-            ASI_ERROR_OUTOF_BOUNDARY, //the startpos is out of boundary
-            ASI_ERROR_TIMEOUT, //timeout
-            ASI_ERROR_INVALID_SEQUENCE,//stop capture first
-            ASI_ERROR_BUFFER_TOO_SMALL, //buffer size is not big enough
-            ASI_ERROR_VIDEO_MODE_ACTIVE,
-            ASI_ERROR_EXPOSURE_IN_PROGRESS,
-            ASI_ERROR_GENERAL_ERROR,//general error, eg: value is out of valid range
-            ASI_ERROR_END
-        };
-        public enum ASI_BOOL
-        {
-            ASI_FALSE = 0,
-            ASI_TRUE
-        };
-        public enum ASI_FLIP_STATUS
-        {
-            ASI_FLIP_NONE = 0,//: original
-            ASI_FLIP_HORIZ,   //: horizontal flip
-            ASI_FLIP_VERT,    //: vertical flip
-            ASI_FLIP_BOTH,    //: both horizontal and vertical flip
-
-        };
-
         [StructLayout(LayoutKind.Sequential)]
         public readonly struct ASI_CAMERA_INFO : INativeCMOSDeviceInfo
         {
@@ -244,27 +145,236 @@ namespace ZWOptical.SDK
                     return Name;
                 }
             }
+
+            public bool TryGetControlRange(CMOSControlType ctrlType, out int min, out int max)
+            {
+                min = max = 0;
+                if (ASIGetNumOfControls(_cameraID, out int numberOfControls) != ASI_ERROR_CODE.ASI_SUCCESS
+                    || !DALControlTypeToASI(ctrlType, out var asiControlType))
+                {
+                    return false;
+                }
+
+                for (int controlIdx = 0; controlIdx < numberOfControls; ++controlIdx)
+                {
+                    var controlCapsErrorCode = ASIGetControlCaps(_cameraID, controlIdx, out ASI_CONTROL_CAPS controlCaps);
+                    if (controlCapsErrorCode == ASI_ERROR_CODE.ASI_SUCCESS && controlCaps.ControlType == asiControlType)
+                    {
+                        min = controlCaps.MinValue;
+                        max = controlCaps.MaxValue;
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public CMOSErrorCode SetControlValue(CMOSControlType controlType, int value, bool isAuto = false)
+            {
+                if (DALControlTypeToASI(controlType, out ASI_CONTROL_TYPE asiControlType))
+                {
+                    return (CMOSErrorCode)(int)ASISetControlValueImpl(_cameraID, asiControlType, value, isAuto ? ASI_BOOL.ASI_TRUE : ASI_BOOL.ASI_FALSE);
+                }
+                
+                throw new ArgumentException($"{controlType} is not supported", nameof(controlType));
+            }
+
+            public CMOSErrorCode GetControlValue(CMOSControlType controlType, out int value, out bool isAuto)
+            {
+                if (DALControlTypeToASI(controlType, out ASI_CONTROL_TYPE asiControlType))
+                {
+                    var err = ASIGetControlValueImpl(_cameraID, asiControlType, out value, out ASI_BOOL pbAuto);
+                    isAuto = pbAuto is ASI_BOOL.ASI_TRUE;
+                    return (CMOSErrorCode)(int)err;
+                }
+
+                throw new ArgumentException($"{controlType} is not supported", nameof(controlType));
+            }
+        };
+
+
+        public static bool DALControlTypeToASI(CMOSControlType dalValue, out ASI_CONTROL_TYPE asiValue)
+        {
+            switch (dalValue)
+            {
+                case CMOSControlType.Gain:
+                    asiValue = ASI_CONTROL_TYPE.ASI_GAIN; return true;
+                case CMOSControlType.Exposure:
+                    asiValue = ASI_CONTROL_TYPE.ASI_EXPOSURE; return true;
+                case CMOSControlType.Gamma:
+                    asiValue = ASI_CONTROL_TYPE.ASI_GAMMA; return true;
+                case CMOSControlType.WB_R:
+                    asiValue = ASI_CONTROL_TYPE.ASI_WB_R; return true;
+                case CMOSControlType.WB_B:
+                    asiValue = ASI_CONTROL_TYPE.ASI_WB_B; return true;
+                case CMOSControlType.Brightness:
+                    asiValue = ASI_CONTROL_TYPE.ASI_BRIGHTNESS; return true;
+                case CMOSControlType.BandwidthOverload:
+                    asiValue = ASI_CONTROL_TYPE.ASI_BANDWIDTHOVERLOAD; return true;
+                case CMOSControlType.Overclock:
+                    asiValue = ASI_CONTROL_TYPE.ASI_OVERCLOCK; return true;
+                case CMOSControlType.Flip:
+                    asiValue = ASI_CONTROL_TYPE.ASI_FLIP; return true;
+                case CMOSControlType.AutoMaxGain:
+                    asiValue = ASI_CONTROL_TYPE.ASI_AUTO_MAX_GAIN; return true;
+                case CMOSControlType.AutoMaxExposure:
+                    asiValue = ASI_CONTROL_TYPE.ASI_AUTO_MAX_EXP; return true;
+                case CMOSControlType.AutoMaxBrightness:
+                    asiValue = ASI_CONTROL_TYPE.ASI_AUTO_MAX_BRIGHTNESS; return true;
+                case CMOSControlType.HardwareBin:
+                    asiValue = ASI_CONTROL_TYPE.ASI_HARDWARE_BIN; return true;
+                case CMOSControlType.HighSpeedMode:
+                    asiValue = ASI_CONTROL_TYPE.ASI_HIGH_SPEED_MODE; return true;
+                case CMOSControlType.CoolerPowerPercent:
+                    asiValue = ASI_CONTROL_TYPE.ASI_COOLER_POWER_PERC; return true;
+                case CMOSControlType.TargetTemperature:
+                    asiValue = ASI_CONTROL_TYPE.ASI_TARGET_TEMP; return true;
+                case CMOSControlType.CoolerOn:
+                    asiValue = ASI_CONTROL_TYPE.ASI_COOLER_ON; return true;
+                case CMOSControlType.MonoBin:
+                    asiValue = ASI_CONTROL_TYPE.ASI_MONO_BIN; return true;
+                case CMOSControlType.FanOn:
+                    asiValue = ASI_CONTROL_TYPE.ASI_FAN_ON; return true;
+                case CMOSControlType.PatternAdjust:
+                    asiValue = ASI_CONTROL_TYPE.ASI_PATTERN_ADJUST; return true;
+                case CMOSControlType.AntiDewHeater:
+                    asiValue = ASI_CONTROL_TYPE.ASI_ANTI_DEW_HEATER; return true;
+                case CMOSControlType.Humidity:
+                    asiValue = ASI_CONTROL_TYPE.ASI_HUMIDITY; return true;
+                case CMOSControlType.EnableDDR:
+                    asiValue = ASI_CONTROL_TYPE.ASI_ENABLE_DDR; return true;
+                default:
+                    asiValue = (ASI_CONTROL_TYPE)int.MaxValue;
+                    return false;
+            }
+        }
+
+        public enum ASI_CONTROL_TYPE
+        {
+            ASI_GAIN = 0,
+            ASI_EXPOSURE,
+            ASI_GAMMA,
+            ASI_WB_R,
+            ASI_WB_B,
+            ASI_BRIGHTNESS,
+            ASI_BANDWIDTHOVERLOAD,
+            ASI_OVERCLOCK,
+            ASI_TEMPERATURE,// return 10*temperature
+            ASI_FLIP,
+            ASI_AUTO_MAX_GAIN,
+            ASI_AUTO_MAX_EXP,
+            ASI_AUTO_MAX_BRIGHTNESS,
+            ASI_HARDWARE_BIN,
+            ASI_HIGH_SPEED_MODE,
+            ASI_COOLER_POWER_PERC,
+            ASI_TARGET_TEMP,// not need *10
+            ASI_COOLER_ON,
+            ASI_MONO_BIN,
+            ASI_FAN_ON,
+            ASI_PATTERN_ADJUST,
+            ASI_ANTI_DEW_HEATER,
+            ASI_HUMIDITY,
+            ASI_ENABLE_DDR
+        }
+
+
+        public enum ASI_IMG_TYPE
+        {
+            //Supported image type
+            ASI_IMG_RAW8 = 0,
+            ASI_IMG_RGB24,
+            ASI_IMG_RAW16,
+            ASI_IMG_Y8,
+            ASI_IMG_END = -1
+        }
+
+
+        public enum ASI_GUIDE_DIRECTION
+        {
+            ASI_GUIDE_NORTH = 0,
+            ASI_GUIDE_SOUTH,
+            ASI_GUIDE_EAST,
+            ASI_GUIDE_WEST
+        }
+
+        public enum ASI_BAYER_PATTERN
+        {
+            ASI_BAYER_RG = 0,
+            ASI_BAYER_BG,
+            ASI_BAYER_GR,
+            ASI_BAYER_GB
+        };
+
+        public enum ASI_EXPOSURE_STATUS
+        {
+            ASI_EXP_IDLE = 0,//: idle states, you can start exposure now
+            ASI_EXP_WORKING,//: exposing
+            ASI_EXP_SUCCESS,// exposure finished and waiting for download
+            ASI_EXP_FAILED,//:exposure failed, you need to start exposure again
+        };
+
+        public enum ASI_ERROR_CODE
+        {
+            ASI_SUCCESS = 0,
+            ASI_ERROR_INVALID_INDEX, //no camera connected or index value out of boundary
+            ASI_ERROR_INVALID_ID, //invalid ID
+            ASI_ERROR_INVALID_CONTROL_TYPE, //invalid control type
+            ASI_ERROR_CAMERA_CLOSED, //camera didn't open
+            ASI_ERROR_CAMERA_REMOVED, //failed to find the camera, maybe the camera has been removed
+            ASI_ERROR_INVALID_PATH, //cannot find the path of the file
+            ASI_ERROR_INVALID_FILEFORMAT,
+            ASI_ERROR_INVALID_SIZE, //wrong video format size
+            ASI_ERROR_INVALID_IMGTYPE, //unsupported image formate
+            ASI_ERROR_OUTOF_BOUNDARY, //the startpos is out of boundary
+            ASI_ERROR_TIMEOUT, //timeout
+            ASI_ERROR_INVALID_SEQUENCE,//stop capture first
+            ASI_ERROR_BUFFER_TOO_SMALL, //buffer size is not big enough
+            ASI_ERROR_VIDEO_MODE_ACTIVE,
+            ASI_ERROR_EXPOSURE_IN_PROGRESS,
+            ASI_ERROR_GENERAL_ERROR,//general error, eg: value is out of valid range
+            ASI_ERROR_END
+        };
+
+        public enum ASI_BOOL
+        {
+            ASI_FALSE = 0,
+            ASI_TRUE
+        };
+        public enum ASI_FLIP_STATUS
+        {
+            ASI_FLIP_NONE = 0,//: original
+            ASI_FLIP_HORIZ,   //: horizontal flip
+            ASI_FLIP_VERT,    //: vertical flip
+            ASI_FLIP_BOTH,    //: both horizontal and vertical flip
+
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct ASI_CONTROL_CAPS
+        public readonly struct ASI_CONTROL_CAPS
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
             private readonly byte[] _name; //the name of the Control like Exposure, Gain etc..
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 128)]
             private readonly byte[] _description; //description of this control
-            public int MaxValue;
-            public int MinValue;
-            public int DefaultValue;
-            public ASI_BOOL IsAutoSupported; //support auto set 1, don't support 0
-            public ASI_BOOL IsWritable; //some control like temperature can only be read by some cameras
-            public ASI_CONTROL_TYPE ControlType;//this is used to get value and set value of the control
+            private readonly int _maxValue;
+            private readonly int _minValue;
+            private readonly int _defaultValue;
+            private readonly ASI_BOOL _isAutoSupported; //support auto set 1, don't support 0
+            private readonly ASI_BOOL _isWritable; //some control like temperature can only be read by some cameras
+            private readonly ASI_CONTROL_TYPE _controlType;//this is used to get value and set value of the control
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 32)]
             private readonly byte[] _unused;//[32];
 
             public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
             public string Description => Encoding.ASCII.GetString(_description).TrimEnd((char)0);
+
+            public int MaxValue => _maxValue;
+            public int MinValue => _minValue;
+            public int DefaultValue => _defaultValue;
+            public bool IsAutoSupported => _isAutoSupported is ASI_BOOL.ASI_TRUE; //support auto set 1, don't support 0
+            public bool IsWritable => _isWritable is ASI_BOOL.ASI_TRUE; //some control like temperature can only be read by some cameras
+            public ASI_CONTROL_TYPE ControlType => _controlType;//this is used to get value and set value of the control
+
         }
 
         public enum ASI_CAMERA_MODE
@@ -514,44 +624,10 @@ namespace ZWOptical.SDK
         [DllImport("ASICamera2", EntryPoint = "ASIGetCameraMode", CallingConvention = CallingConvention.Cdecl)]
         public static extern ASI_ERROR_CODE ASIGetCameraMode(int iCameraID, out ASI_CAMERA_MODE mode);
 
-        public static ASI_ERROR_CODE ASISetControlValue(int iCameraID, ASI_CONTROL_TYPE ControlType, int lValue, bool isAuto = false)
-            => ASISetControlValueImpl(iCameraID, ControlType, lValue, isAuto ? ASI_BOOL.ASI_TRUE : ASI_BOOL.ASI_FALSE);
-
-        public static ASI_ERROR_CODE ASIGetControlValue(int iCameraID, ASI_CONTROL_TYPE ControlType, out int plValue, out bool isAuto)
-        {
-            ASI_ERROR_CODE err = ASIGetControlValueImpl(iCameraID, ControlType, out plValue, out ASI_BOOL pbAuto);
-            isAuto = pbAuto is ASI_BOOL.ASI_TRUE;
-            return err;
-        }
-
         /// <summary>
         /// Returns SDK version with this format: <code>1, 51</code>
         /// </summary>
         /// <returns></returns>
         public static Version ASIGetSDKVersion() => Common.ParseVersionString(ASIGetSDKVersionImpl());
-        public static bool TryGetControlRange(
-            int iCameraID,
-            ASI_CONTROL_TYPE ctrlType,
-            out int min,
-            out int max)
-        {
-            min = max = 0;
-            if (ASIGetNumOfControls(iCameraID, out int numberOfControls) != ASI_ERROR_CODE.ASI_SUCCESS)
-            {
-                return false;
-            }
-
-            for (int controlIdx = 0; controlIdx < numberOfControls; ++controlIdx)
-            {
-                var controlCapsErrorCode = ASIGetControlCaps(iCameraID, controlIdx, out ASI_CONTROL_CAPS controlCaps);
-                if (controlCapsErrorCode == ASI_ERROR_CODE.ASI_SUCCESS && controlCaps.ControlType == ctrlType)
-                {
-                    min = controlCaps.MinValue;
-                    max = controlCaps.MaxValue;
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }

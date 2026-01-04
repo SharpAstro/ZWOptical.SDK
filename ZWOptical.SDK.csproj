@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="TianWen.DAL" Version="1.2.81" />
+	<PackageReference Include="TianWen.DAL" Version="1.2.111" />
   </ItemGroup>
 
 </Project>
