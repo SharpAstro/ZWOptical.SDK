@@ -215,8 +215,30 @@ namespace ZWOptical.SDK
 
                 return (CMOSErrorCode)err;
             }
-        };
 
+            public CMOSErrorCode GetStartPosition(out int startX, out int startY) => (CMOSErrorCode)ASIGetStartPos(_cameraID, out startX, out startY);
+
+            public CMOSErrorCode SetStartPosition(int startX, int startY) => (CMOSErrorCode)ASISetStartPos(_cameraID, startX, startY);
+
+            public CMOSErrorCode GetROIFormat(out int width, out int height, out int bin, out PixelDataFormat pixelDataFormat)
+            {
+                var err = ASIGetROIFormat(_cameraID, out width, out height, out bin, out var asiImgType);
+                if (err is ASI_ERROR_CODE.ASI_SUCCESS)
+                {
+                    pixelDataFormat = (PixelDataFormat)asiImgType;
+                }
+                else
+                {
+                    pixelDataFormat = (PixelDataFormat)(-1);
+                }
+    
+                return (CMOSErrorCode)err;
+            }
+
+            public CMOSErrorCode SetROIFormat(int width, int height, int bin, PixelDataFormat pixelDataFormat) => (CMOSErrorCode)ASISetROIFormat(_cameraID, width, height, bin, (ASI_IMG_TYPE)pixelDataFormat);
+        
+            public CMOSErrorCode GetDataAfterExposure(IntPtr buffer, int bufferSize) => (CMOSErrorCode)ASIGetDataAfterExp(_cameraID, buffer, bufferSize);
+        };
 
         public static bool DALControlTypeToASI(CMOSControlType dalValue, out ASI_CONTROL_TYPE asiValue)
         {
