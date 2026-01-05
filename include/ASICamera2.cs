@@ -9,7 +9,7 @@ namespace ZWOptical.SDK
     public static class ASICamera2
     {
         [StructLayout(LayoutKind.Sequential)]
-        public readonly struct ASI_CAMERA_INFO : INativeCMOSDeviceInfo
+        public readonly struct ASI_CAMERA_INFO : ICMOSNativeInterface
         {
             [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U1, SizeConst = 64)]
             private readonly byte[] _name;  // char[64]; //the name of the camera, you can display this to the UI
@@ -172,7 +172,7 @@ namespace ZWOptical.SDK
             {
                 if (DALControlTypeToASI(controlType, out ASI_CONTROL_TYPE asiControlType))
                 {
-                    return (CMOSErrorCode)(int)ASISetControlValueImpl(_cameraID, asiControlType, value, isAuto ? ASI_BOOL.ASI_TRUE : ASI_BOOL.ASI_FALSE);
+                    return (CMOSErrorCode)ASISetControlValueImpl(_cameraID, asiControlType, value, isAuto ? ASI_BOOL.ASI_TRUE : ASI_BOOL.ASI_FALSE);
                 }
                 
                 throw new ArgumentException($"{controlType} is not supported", nameof(controlType));
@@ -184,10 +184,36 @@ namespace ZWOptical.SDK
                 {
                     var err = ASIGetControlValueImpl(_cameraID, asiControlType, out value, out ASI_BOOL pbAuto);
                     isAuto = pbAuto is ASI_BOOL.ASI_TRUE;
-                    return (CMOSErrorCode)(int)err;
+                    return (CMOSErrorCode)err;
                 }
 
                 throw new ArgumentException($"{controlType} is not supported", nameof(controlType));
+            }
+
+            public CMOSErrorCode PulseGuideOn(GuideDirection guideDirection) => (CMOSErrorCode)ASIPulseGuideOn(_cameraID, (ASI_GUIDE_DIRECTION)guideDirection);
+
+            public CMOSErrorCode PulseGuideOff(GuideDirection guideDirection) => (CMOSErrorCode)ASIPulseGuideOff(_cameraID, (ASI_GUIDE_DIRECTION)guideDirection);
+
+            public CMOSErrorCode StartLightExposure() => (CMOSErrorCode)ASIStartLightExposure(_cameraID);
+
+            public CMOSErrorCode StartDarkExposure() => (CMOSErrorCode)ASIStartDarkExposure(_cameraID);
+
+            public CMOSErrorCode StopExposure() => (CMOSErrorCode)ASIStopExposure(_cameraID);
+
+            public CMOSErrorCode GetExposureStatus(out ExposureStatus exposureStatus)
+            {
+                var err = ASIGetExpStatus(_cameraID, out var asiExpStatus);
+                
+                if (err is ASI_ERROR_CODE.ASI_SUCCESS)
+                {
+                    exposureStatus = (ExposureStatus)asiExpStatus;
+                }
+                else
+                {
+                    exposureStatus = (ExposureStatus)(-1);
+                }
+
+                return (CMOSErrorCode)err;
             }
         };
 
