@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>netstandard2.0</TargetFramework>
+	<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
 	<RootNamespace>ZWOptical.SDK</RootNamespace>
 	<AssemblyName>ZWOptical.SDK</AssemblyName>
 	<PackageLicenseFile>license.txt</PackageLicenseFile>
@@ -10,6 +10,7 @@
 	<PackageId>ZWOptical.SDK</PackageId>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<PackageTags>Astronomy,ZWO,ASI</PackageTags>
+	<AllowUnsafeBlocks Condition="'$(TargetFramework)' != 'netstandard2.0'">true</AllowUnsafeBlocks>
 	<RepositoryUrl>https://github.com/SharpAstro/ZWOptical.SDK</RepositoryUrl>
 	<PackageProjectUrl>https://github.com/SharpAstro/ZWOptical.SDK</PackageProjectUrl>
 	<Description>Implements accessing the ZWO ASI, EAF and EFW devices using .NET (standard)</Description>
