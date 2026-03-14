@@ -55,7 +55,7 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-	<PackageReference Include="TianWen.DAL" Version="1.2.141" />
+	<PackageReference Include="TianWen.DAL" Version="2.0.151" />
   </ItemGroup>
 
 </Project>
