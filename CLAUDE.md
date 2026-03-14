@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-ZWOptical.SDK — a .NET Standard 2.0 NuGet package providing C# P/Invoke bindings to ZWO's native C SDKs for astronomical cameras (ASI), electronic focusers (EAF), and filter wheels (EFW). Part of the SharpAstro ecosystem.
+ZWOptical.SDK — a .NET 10 NuGet package providing C# P/Invoke bindings to ZWO's native C SDKs for astronomical cameras (ASI), electronic focusers (EAF), and filter wheels (EFW). Part of the SharpAstro ecosystem.
 
 ## Build
 
@@ -16,7 +16,7 @@ NuGet package is generated on every build (`GeneratePackageOnBuild`). No test pr
 
 ## CI/CD
 
-GitHub Actions (`.github/workflows/dotnet.yml`): builds on push/PR to `main`, auto-publishes `.nupkg` to NuGet.org on merge. Versioning uses `3.4.<run_number>` scheme set via `-p:Version=...` in CI.
+GitHub Actions (`.github/workflows/dotnet.yml`): builds on push/PR to `main`, auto-publishes `.nupkg` to NuGet.org on merge. Versioning uses `4.0.<run_number>` scheme set via `-p:Version=...` in CI.
 
 ## Architecture
 
