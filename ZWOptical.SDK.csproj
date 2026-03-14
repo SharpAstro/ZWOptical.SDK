@@ -13,6 +13,8 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<RepositoryUrl>https://github.com/SharpAstro/ZWOptical.SDK</RepositoryUrl>
 	<PackageProjectUrl>https://github.com/SharpAstro/ZWOptical.SDK</PackageProjectUrl>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<Description>Implements accessing the ZWO ASI, EAF and EFW devices using .NET</Description>
   </PropertyGroup>
 
@@ -52,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 	<PackageReference Include="TianWen.DAL" Version="1.2.141" />
   </ItemGroup>
 

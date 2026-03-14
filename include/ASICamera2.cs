@@ -509,6 +509,14 @@ public static partial class ASICamera2
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ASI_ERROR_CODE ASIGetCameraMode(int iCameraID, out ASI_CAMERA_MODE mode);
 
+    [LibraryImport(ASISharedLib, EntryPoint = "ASISetCameraMode")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial ASI_ERROR_CODE ASISetCameraMode(int iCameraID, ASI_CAMERA_MODE mode);
+
+    [LibraryImport(ASISharedLib, EntryPoint = "ASISendSoftTrigger")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial ASI_ERROR_CODE ASISendSoftTrigger(int iCameraID, ASI_BOOL bStart);
+
     /// <summary>
     /// Starts an exposure with an open <see cref="ASI_CAMERA_INFO.MechanicalShutter"/> (i.e. a light exposure).
     /// </summary>
