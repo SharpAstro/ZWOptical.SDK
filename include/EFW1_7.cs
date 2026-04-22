@@ -39,7 +39,22 @@ public static partial class EFW1_7
 
         public bool Close() => EFWClose(ID) is EFW_ERROR_CODE.EFW_SUCCESS;
 
-        public string SerialNumber => EFWGetSerialNumber(ID, out var sn) is EFW_ERROR_CODE.EFW_SUCCESS ? sn.ToString() : null;
+        /// <summary>
+        /// Factory serial as a 16-char hex string, or null if not programmed. Same
+        /// convention as <see cref="ASICameraInfo.SerialNumber"/>: the native 8-byte
+        /// ID is raw binary, rendered in hexadecimal. All-zero / all-0xFF patterns
+        /// are treated as missing.
+        /// </summary>
+        public string SerialNumber
+        {
+            get
+            {
+                if (EFWGetSerialNumber(ID, out var sn) is not EFW_ERROR_CODE.EFW_SUCCESS)
+                    return null;
+                var hex = sn.ToHexString();
+                return hex is "0000000000000000" or "FFFFFFFFFFFFFFFF" ? null : hex;
+            }
+        }
 
         public bool IsUSB3Device => false;
 

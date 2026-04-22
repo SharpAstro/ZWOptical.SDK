@@ -53,7 +53,26 @@ public static partial class ASICamera2
 
         public bool Close() => ASICloseCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
 
-        public string SerialNumber => ASIGetSerialNumber(ID, out var sn) is ASI_ERROR_CODE.ASI_SUCCESS ? sn.ToString() : null;
+        /// <summary>
+        /// Factory-programmed serial as a 16-char hex string, or null if the camera
+        /// has no serial number programmed (<c>ASI_ERROR_GENERAL_ERROR</c>). Per the
+        /// ASICamera2.h docs: the native <c>ASI_SN</c> is 8 raw binary bytes "to be
+        /// printed in hexadecimal", NOT ASCII-decoded text. An all-zero or all-0xFF
+        /// serial (bodies that the firmware reports as SUCCESS despite having no SN)
+        /// is also treated as missing.
+        /// </summary>
+        public string SerialNumber
+        {
+            get
+            {
+                if (ASIGetSerialNumber(ID, out var sn) is not ASI_ERROR_CODE.ASI_SUCCESS)
+                    return null;
+                var hex = sn.ToHexString();
+                // Reject 0x00 x8 / 0xFF x8: some firmware returns SUCCESS with these
+                // "empty" byte patterns on unprogrammed bodies instead of the error code.
+                return hex is "0000000000000000" or "FFFFFFFFFFFFFFFF" ? null : hex;
+            }
+        }
 
         public bool IsUSB3Device => _isUSB3Camera is ASI_BOOL.ASI_TRUE;
 
@@ -113,20 +132,16 @@ public static partial class ASICamera2
 
         public double PixelSize => _pixelSize;
 
+        /// <summary>
+        /// User-written 8-byte custom id (set via the ZWO ASICap tool on USB3 bodies),
+        /// or <see cref="Name"/> if no valid printable custom id was programmed. Same
+        /// garbage-rejection rule as <see cref="SerialNumber"/>.
+        /// </summary>
         public string CustomId
-        {
-            get
-            {
-                if (ASIGetID(ID, out var id) is ASI_ERROR_CODE.ASI_SUCCESS)
-                {
-                    var idString = id.ToString();
-                    if (idString.Length > 0)
-                        return idString;
-                }
-
-                return Name;
-            }
-        }
+            => ASIGetID(ID, out var id) is ASI_ERROR_CODE.ASI_SUCCESS
+               && id.TryGetPrintableText(out var text)
+                ? text
+                : Name;
 
         public bool TryGetControlRange(CMOSControlType ctrlType, out int min, out int max)
         {

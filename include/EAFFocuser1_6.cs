@@ -63,7 +63,22 @@ public static partial class EAFFocuser1_6
 
         public bool Close() => EAFClose(ID) is EAF_ERROR_CODE.EAF_SUCCESS;
 
-        public string SerialNumber => EAFGetSerialNumber(ID, out var sn) is EAF_ERROR_CODE.EAF_SUCCESS ? sn.ToString() : null;
+        /// <summary>
+        /// Factory serial as a 16-char hex string, or null if not programmed. Same
+        /// convention as <see cref="ASICameraInfo.SerialNumber"/>: the native 8-byte
+        /// ID is raw binary, rendered in hexadecimal. All-zero / all-0xFF patterns
+        /// are treated as missing.
+        /// </summary>
+        public string SerialNumber
+        {
+            get
+            {
+                if (EAFGetSerialNumber(ID, out var sn) is not EAF_ERROR_CODE.EAF_SUCCESS)
+                    return null;
+                var hex = sn.ToHexString();
+                return hex is "0000000000000000" or "FFFFFFFFFFFFFFFF" ? null : hex;
+            }
+        }
 
         public bool IsUSB3Device => false;
 
