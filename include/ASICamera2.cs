@@ -78,6 +78,9 @@ public static partial class ASICamera2
 
         public bool IsTriggerCamera => _isTriggerCam is ASI_BOOL.ASI_TRUE;
 
+        string? INativeDeviceInfo.SensorModel =>
+            TianWen.DAL.SensorModelNames.TryGetSensorModel(Name, out var model) ? model : null;
+
         public BayerPattern BayerPattern => _isColorCam is ASI_BOOL.ASI_TRUE
             ? _bayerPattern switch
             {
