@@ -1,0 +1,27 @@
+<Project>
+
+  <!-- Chains to a consumer's props rather than shadowing it. MSBuild stops at the first
+       Directory.Build.props it finds walking up from the project directory, so a plain <Project>
+       here would silently cut any inheritance that later appears above this repo.
+       GetPathOfFileAbove finds a parent when one exists, and returns empty otherwise, so today this
+       is a no-op. Captured into a property first because nested quotes inside a Condition attribute
+       do not parse (MSB4092). -->
+  <PropertyGroup>
+    <ParentBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</ParentBuildProps>
+  </PropertyGroup>
+  <Import Project="$(ParentBuildProps)" Condition="Exists('$(ParentBuildProps)')" />
+
+  <PropertyGroup>
+    <!-- THE version for this repo, and the only place it is written. It used to live solely in
+         .github/workflows/dotnet.yml as VERSION_PREFIX, which meant the csproj carried no version at
+         all: CI stamping one -p:Version was the ONLY thing giving this package a number, and a local
+         dotnet pack produced 1.0.0, the SDK default, against a package whose real line is 4.2.
+         The workflow now READS this back (dotnet msbuild -getProperty:VersionMajorMinor), so a
+         release bump is this one line and CI cannot publish a version the package disagrees with. -->
+    <VersionMajorMinor>4.2</VersionMajorMinor>
+    <!-- Local builds get Major.Minor.0; CI passes -p:Version=Major.Minor.<run><attempt>, and the
+         condition lets it win. -->
+    <VersionPrefix Condition="'$(VersionPrefix)' == ''">$(VersionMajorMinor).0</VersionPrefix>
+  </PropertyGroup>
+
+</Project>
