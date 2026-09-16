@@ -18,7 +18,7 @@
          dotnet pack produced 1.0.0, the SDK default, against a package whose real line is 4.2.
          The workflow now READS this back (dotnet msbuild -getProperty:VersionMajorMinor), so a
          release bump is this one line and CI cannot publish a version the package disagrees with. -->
-    <VersionMajorMinor>4.2</VersionMajorMinor>
+    <VersionMajorMinor>4.3</VersionMajorMinor>
     <!-- Local builds get Major.Minor.0; CI passes -p:Version=Major.Minor.<run><attempt>, and the
          condition lets it win. -->
     <VersionPrefix Condition="'$(VersionPrefix)' == ''">$(VersionMajorMinor).0</VersionPrefix>

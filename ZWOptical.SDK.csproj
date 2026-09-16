@@ -53,8 +53,24 @@
 	<None Include="lib/armv8/libEFW1.7.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
   </ItemGroup>
 
-  <ItemGroup>
-	<PackageReference Include="TianWen.DAL" Version="2.0.*" />
+  <!--
+    Take TianWen.DAL from the sibling checkout when there is one, self-enabling on Exists().
+
+    Not a convenience. With an unconditional PackageReference, a consumer building both this
+    project and TianWen.DAL from source still pulled the PUBLISHED DAL in through here, so two
+    assemblies with the same simple name reached the compiler and it refused them (CS1704).
+    Raising the sibling's version only wins until CI publishes the next patch of that same minor:
+    QHYCCD.SDK hit exactly that while landing DAL 2.1, where 2.1.241 was published, the sibling
+    built as 2.1.0, and 2.1.251 then took the lead back. There is no version that stays ahead, so
+    the reference has to go away when the source is present.
+
+    A build with no sibling, CI included, is unaffected and still restores the package.
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)..\TianWen.DAL\TianWen.DAL.csproj')">
+	<ProjectReference Include="..\TianWen.DAL\TianWen.DAL.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\TianWen.DAL\TianWen.DAL.csproj')">
+	<PackageReference Include="TianWen.DAL" Version="2.1.*" />
   </ItemGroup>
 
 </Project>
