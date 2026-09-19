@@ -61,7 +61,7 @@ public static partial class ASICamera2
         /// serial (bodies that the firmware reports as SUCCESS despite having no SN)
         /// is also treated as missing.
         /// </summary>
-        public string SerialNumber
+        public string? SerialNumber
         {
             get
             {
