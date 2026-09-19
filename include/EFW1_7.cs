@@ -45,7 +45,7 @@ public static partial class EFW1_7
         /// ID is raw binary, rendered in hexadecimal. All-zero / all-0xFF patterns
         /// are treated as missing.
         /// </summary>
-        public string SerialNumber
+        public string? SerialNumber
         {
             get
             {
