@@ -55,6 +55,53 @@
   </ItemGroup>
 
   <!--
+    The PackagePath entries above serve the NuGet package, and ONLY it. The runtimes/rid/native
+    layout is a NuGet resolution mechanism, so a consumer taking this project by ProjectReference
+    gets the managed assembly and no native library at all. Every SharpAstro consumer does exactly
+    that on a dev box, because UseLocalSiblings self-enables when the sibling clone is present, so
+    the ZWO camera, focuser and filter wheel found no device there while working perfectly from the
+    published package. That is worse than the usual UseLocalSiblings trap: not a stale version but
+    an absent capability, and silent, because a missing DllImport target looks the same as nothing
+    being plugged in. QHYCCD.SDK has carried this fix for a while, and the ASYMMETRY is how the gap
+    was found: on one dev box a QHY camera enumerated and a ZWO one did not, which reads as a ZWO
+    driver bug rather than as a difference in how the two projects lay out their natives.
+
+    Copying beside the consumer's binary is the fix: the app directory is where the runtime probes
+    for a DllImport, whereas a runtimes folder in an output directory is not probed without the
+    deps.json entry only a package supplies. Update rather than a second Include, so the metadata
+    lands on the item declared above instead of duplicating it.
+
+    Selected by RID, which is where this goes further than QHYCCD.SDK's OS-only version, because
+    ZWO's layout demands it: lib/x64 and lib/x86 each hold BOTH the Windows .dll and the Linux .so,
+    and arm lives in two further directories. An OS test alone would copy the x64 .so onto a
+    Raspberry Pi, which is worse than copying nothing, a wrong-architecture native failing to load
+    with an error about the file rather than an obvious absence; linux-arm64 is a deployment this
+    project supports. ZWO ships no macOS and no win-arm64 binaries at all, so for those RIDs the
+    mapping stays empty and nothing is copied, which is the honest answer rather than an oversight.
+  -->
+  <PropertyGroup>
+	<_ZwoNativeRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_ZwoNativeRid>
+	<_ZwoNativeRid Condition="'$(_ZwoNativeRid)' == ''">$(NETCoreSdkPortableRuntimeIdentifier)</_ZwoNativeRid>
+	<!-- Never empty past here, so the StartsWith calls below always have a string to run on. -->
+	<_ZwoNativeRid Condition="'$(_ZwoNativeRid)' == ''">unknown</_ZwoNativeRid>
+
+	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'win-x64' Or '$(_ZwoNativeRid)' == 'linux-x64'">lib/x64</_ZwoNativeDir>
+	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'win-x86' Or '$(_ZwoNativeRid)' == 'linux-x86'">lib/x86</_ZwoNativeDir>
+	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'linux-arm'">lib/armv7</_ZwoNativeDir>
+	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'linux-arm64'">lib/armv8</_ZwoNativeDir>
+
+	<_ZwoNativePrefix Condition="$(_ZwoNativeRid.StartsWith('linux-'))">lib</_ZwoNativePrefix>
+	<_ZwoNativeSuffix Condition="$(_ZwoNativeRid.StartsWith('win-'))">.dll</_ZwoNativeSuffix>
+	<_ZwoNativeSuffix Condition="$(_ZwoNativeRid.StartsWith('linux-'))">.so</_ZwoNativeSuffix>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_ZwoNativeDir)' != ''">
+	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)ASICamera2$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)ASICamera2$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
+	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)EAFFocuser1.6$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)EAFFocuser1.6$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
+	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)EFW1.7$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)EFW1.7$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
     Take TianWen.DAL from the sibling checkout when there is one, self-enabling on Exists().
 
     Not a convenience. With an unconditional PackageReference, a consumer building both this
