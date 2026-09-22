@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,6 +8,13 @@ namespace ZWOptical.SDK;
 
 public static partial class EAFFocuser1_6
 {
+    // libEAFFocuser1.6.so names no libudev in its DT_NEEDED and calls fifteen of its functions anyway, so
+    // those symbols have to be in the global namespace before the runtime loads it, or the
+    // first call into this class kills the process with a symbol lookup error. A static
+    // constructor runs before this class's first P/Invoke, which is exactly when that load
+    // happens. See NativeDependencies for why NativeLibrary.Load cannot do it.
+    static EAFFocuser1_6() => NativeDependencies.EnsureLinuxUdevIsGloballyVisible();
+
     public enum EAF_ERROR_CODE
     {
         EAF_SUCCESS = 0,

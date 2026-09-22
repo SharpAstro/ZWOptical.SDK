@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -17,6 +17,17 @@ NuGet package is generated on every build (`GeneratePackageOnBuild`). No test pr
 ## CI/CD
 
 GitHub Actions (`.github/workflows/dotnet.yml`): builds on push/PR to `main`, auto-publishes `.nupkg` to NuGet.org on merge. Versioning uses `4.0.<run_number>` scheme set via `-p:Version=...` in CI.
+
+## The EFW and EAF natives need libudev loaded for them
+
+`libEFW1.7.so` and `libEAFFocuser1.6.so` call fifteen or sixteen udev functions each and name no
+libudev in their `DT_NEEDED`, so nothing causes it to be loaded and the first call into either one
+kills the process with `undefined symbol: udev_new`. `libASICamera2.so` is not affected (it declares
+`libusb-1.0.so.0` properly). `NativeDependencies` loads libudev with `RTLD_GLOBAL` from the static
+constructors of those two classes, which is the only way the symbols become visible to a library the
+runtime loads afterwards -- `NativeLibrary.Load` uses `RTLD_LOCAL` and would not help. Best effort:
+the result is in `NativeDependencies.LinuxUdevLoaded`, and a box with no libudev simply cannot drive
+those two device families.
 
 ## Architecture
 
