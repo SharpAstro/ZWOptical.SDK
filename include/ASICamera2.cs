@@ -168,6 +168,35 @@ public static partial class ASICamera2
             return false;
         }
 
+        /// <summary>
+        /// The white balance scale, false on a mono body, which has none.
+        /// </summary>
+        /// <remarks>
+        /// <para>Bounds are read from the camera's own control caps rather than written here, so a
+        /// body reporting a different range answers for itself; observed ranges are about
+        /// [1, 99].</para>
+        /// <para><b>Neutral is 50, measured rather than taken from the SDK's default.</b> A ZWO
+        /// frame captured at WB_R 65 carries a red gain of 1.312 in its pixels, which is 65/50, so
+        /// the control is a ratio about 50. Stating it as a constant rather than deriving
+        /// (min + max) / 2 is deliberate: the two agree on a [1, 99] body only by coincidence, and
+        /// a body reporting any other range would silently get a different neutral from the
+        /// midpoint.</para>
+        /// <para><see cref="ICMOSNativeInterface.HasThreeChannelWhiteBalance"/> is left at its
+        /// default of false: ZWO balances red and blue against an implicit green and exposes no
+        /// green control at all, so there is no third channel to write.</para>
+        /// </remarks>
+        public bool TryGetWhiteBalanceRange(out int min, out int max, out int neutral)
+        {
+            if (_isColorCam is not ASI_BOOL.ASI_TRUE)
+            {
+                min = max = neutral = 0;
+                return false;
+            }
+
+            neutral = 50;
+            return TryGetControlRange(CMOSControlType.WB_R, out min, out max);
+        }
+
         public CMOSErrorCode SetControlValue(CMOSControlType controlType, int value, bool isAuto = false)
         {
             if (DALControlTypeToASI(controlType, out ASI_CONTROL_TYPE asiControlType))
