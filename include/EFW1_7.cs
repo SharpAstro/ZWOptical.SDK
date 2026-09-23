@@ -25,6 +25,10 @@ public static partial class EFW1_7
         EFW_ERROR_MOVING,
         EFW_ERROR_ERROR_STATE,
         EFW_ERROR_GENERAL_ERROR,//other error
+        EFW_ERROR_NOT_SUPPORTED,
+        /// <summary>The wheel is not open. <c>EFWGetProperty</c> answers this for a wheel that has
+        /// not been opened, whatever the order the header's own usage notes suggest.</summary>
+        EFW_ERROR_CLOSED,
         EFW_ERROR_END = -1
     }
 
