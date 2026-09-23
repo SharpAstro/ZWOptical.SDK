@@ -118,7 +118,7 @@
 	<ProjectReference Include="..\TianWen.DAL\TianWen.DAL.csproj" />
   </ItemGroup>
   <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\TianWen.DAL\TianWen.DAL.csproj')">
-	<PackageReference Include="TianWen.DAL" Version="3.0.*" />
+	<PackageReference Include="TianWen.DAL" Version="3.2.*" />
   </ItemGroup>
 
 </Project>
