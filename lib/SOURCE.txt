@@ -1,0 +1,7 @@
+zip:    ASI_Camera_SDK.zip
+sha256: c6d59bf2de5b807f13d60d10b035e10dff31aeaa43391c6cd4782242126775ec
+zip:    EAF_SDK_V1.8.1.zip
+sha256: 52e1bbb97fc7d7063ead125adb8bb920b675d1bda55ddb9275f67f575d0ccc9f
+zip:    EFW_SDK.zip
+sha256: e6a11a58acec98f7907e8e025cce1529a2f6db6f0df153dda247b8f14a67dfd9
+at:     2026-09-23T05:36:20Z

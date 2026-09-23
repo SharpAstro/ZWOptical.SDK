@@ -1,10 +1,10 @@
 using TianWen.DAL;
 using static ZWOptical.SDK.ASICamera2;
 using static ZWOptical.SDK.ASICamera2.ASI_ERROR_CODE;
-using static ZWOptical.SDK.EAFFocuser1_6;
-using static ZWOptical.SDK.EAFFocuser1_6.EAF_ERROR_CODE;
-using static ZWOptical.SDK.EFW1_7;
-using static ZWOptical.SDK.EFW1_7.EFW_ERROR_CODE;
+using static ZWOptical.SDK.EAFFocuser;
+using static ZWOptical.SDK.EAFFocuser.EAF_ERROR_CODE;
+using static ZWOptical.SDK.EFWFilter;
+using static ZWOptical.SDK.EFWFilter.EFW_ERROR_CODE;
 
 namespace ZWOptical.SDK;
 
@@ -59,11 +59,15 @@ public class DeviceIterator<TDeviceInfo> : NativeDeviceIteratorBase<TDeviceInfo>
     /// <para>Opened and closed again here rather than accepted half-read, because the slot count is
     /// part of what a consumer is told (tianwen seeds its filter names from it), and a struct copied
     /// with 0 would carry that 0 even after the consumer opened the wheel itself.</para>
+    /// <para><b>Retried on ANY failure, not on <c>EFW_ERROR_CLOSED</c>.</b> The code for "not open"
+    /// moved between drops (9 under 1.7, 11 under 1.8.4, where the 1.8.4 header says 10), and matching
+    /// the number would have dropped every wheel again the first time it moved. A wheel that really is
+    /// absent fails the open as well, so the retry costs nothing there.</para>
     /// </remarks>
     private static bool TryGetEfwProperty(int efwId, out EFW_INFO efwInfo)
     {
         var error = EFWGetProperty(efwId, out efwInfo);
-        if (error is EFW_ERROR_CLOSED && EFWOpen(efwId) is EFW_SUCCESS)
+        if (error is not EFW_SUCCESS && EFWOpen(efwId) is EFW_SUCCESS)
         {
             try
             {

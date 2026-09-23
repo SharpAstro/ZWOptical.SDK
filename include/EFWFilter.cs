@@ -6,14 +6,14 @@ using TianWen.DAL;
 
 namespace ZWOptical.SDK;
 
-public static partial class EFW1_7
+public static partial class EFWFilter
 {
-    // libEFW1.7.so names no libudev in its DT_NEEDED and calls fifteen of its functions anyway, so
+    // libEFWFilter.so names no libudev in its DT_NEEDED and calls sixteen of its functions anyway, so
     // those symbols have to be in the global namespace before the runtime loads it, or the
     // first call into this class kills the process with a symbol lookup error. A static
     // constructor runs before this class's first P/Invoke, which is exactly when that load
     // happens. See NativeDependencies for why NativeLibrary.Load cannot do it.
-    static EFW1_7() => NativeDependencies.EnsureLinuxUdevIsGloballyVisible();
+    static EFWFilter() => NativeDependencies.EnsureLinuxUdevIsGloballyVisible();
 
     public enum EFW_ERROR_CODE
     {
@@ -26,9 +26,20 @@ public static partial class EFW1_7
         EFW_ERROR_ERROR_STATE,
         EFW_ERROR_GENERAL_ERROR,//other error
         EFW_ERROR_NOT_SUPPORTED,
-        /// <summary>The wheel is not open. <c>EFWGetProperty</c> answers this for a wheel that has
-        /// not been opened, whatever the order the header's own usage notes suggest.</summary>
-        EFW_ERROR_CLOSED,
+        /// <summary>New in SDK 1.8, inserted before <see cref="EFW_ERROR_CLOSED"/>.</summary>
+        EFW_ERROR_INVALID_LENGTH,
+        /// <summary>The wheel is not open. <c>EFWGetProperty</c>, <c>EFWGetPosition</c> and
+        /// <c>EFWSetPosition</c> all answer this for a wheel that has not been opened.</summary>
+        /// <remarks>
+        /// <b>Pinned at 11 by measurement, not by the header.</b> The 1.8.4 header counts it to 10,
+        /// one past <see cref="EFW_ERROR_INVALID_LENGTH"/>, but the 1.8.4 library answers 11 for an
+        /// unopened EFW(8PosPlan), from all three calls, on 2026-09-23 (SDK 1.7 answered 9, which is
+        /// where its own header put it). So the library carries a member the header does not, and
+        /// 10 is left unnamed rather than guessed at. Nothing should branch on this value alone:
+        /// <see cref="DeviceIterator{TDeviceInfo}"/> retries a failed property read with the wheel
+        /// open whatever the code, so the next drop moving it again costs nothing there.
+        /// </remarks>
+        EFW_ERROR_CLOSED = 11,
         EFW_ERROR_END = -1
     }
 
@@ -88,7 +99,7 @@ public static partial class EFW1_7
         public string CustomId => Name;
     };
 
-    const string EFWSharedLib = "EFW1.7";
+    const string EFWSharedLib = "EFWFilter";
 
     // Functions with non-blittable struct parameters use DllImport
     [DllImport(EFWSharedLib, EntryPoint = "EFWGetProperty", CallingConvention = CallingConvention.Cdecl)]

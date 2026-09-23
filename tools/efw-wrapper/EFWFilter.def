@@ -1,0 +1,22 @@
+LIBRARY EFWFilter
+EXPORTS
+    EFWCalibrate
+    EFWCheck
+    EFWClose
+    EFWGetDirection
+    EFWGetFirmwareVersion
+    EFWGetHWErrorCode
+    EFWGetID
+    EFWGetNum
+    EFWGetPosition
+    EFWGetProductIDs
+    EFWGetProperty
+    EFWGetSDKVersion
+    EFWGetSerialNumber
+    EFWHidEndUpdate
+    EFWHidStartUpdate
+    EFWHidWriteUpdateFile
+    EFWOpen
+    EFWSetDirection
+    EFWSetID
+    EFWSetPosition
