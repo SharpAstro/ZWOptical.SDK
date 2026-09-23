@@ -34,24 +34,24 @@
 
 	<None Include="license.txt" PackagePath="" Pack="True" />
 	<None Include="README.md" PackagePath="" Pack="true" />
-	<None Include="lib/x86/libASICamera2.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
-	<None Include="lib/x86/libEAFFocuser1.6.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
-	<None Include="lib/x86/libEFW1.7.so" PackagePath="runtimes/linux-x86/native" Pack="True" />
-	<None Include="lib/x86/ASICamera2.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
-	<None Include="lib/x86/EAFFocuser1.6.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
-	<None Include="lib/x86/EFW1.7.dll" PackagePath="runtimes/win-x86/native" Pack="True" />
-	<None Include="lib/x64/libASICamera2.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
-	<None Include="lib/x64/libEAFFocuser1.6.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
-	<None Include="lib/x64/libEFW1.7.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
-	<None Include="lib/x64/ASICamera2.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
-	<None Include="lib/x64/EAFFocuser1.6.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
-	<None Include="lib/x64/EFW1.7.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
-	<None Include="lib/armv7/libASICamera2.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
-	<None Include="lib/armv7/libEAFFocuser1.6.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
-	<None Include="lib/armv7/libEFW1.7.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
-	<None Include="lib/armv8/libASICamera2.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
-	<None Include="lib/armv8/libEAFFocuser1.6.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
-	<None Include="lib/armv8/libEFW1.7.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="lib/win-x64/ASICamera2.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
+	<None Include="lib/win-x64/EAFFocuser.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
+	<None Include="lib/win-x64/EFWFilter.dll" PackagePath="runtimes/win-x64/native" Pack="True" />
+	<None Include="lib/linux-x64/libASICamera2.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+	<None Include="lib/linux-x64/libEAFFocuser.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+	<None Include="lib/linux-x64/libEFWFilter.so" PackagePath="runtimes/linux-x64/native" Pack="True" />
+	<None Include="lib/linux-arm64/libASICamera2.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="lib/linux-arm64/libEAFFocuser.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="lib/linux-arm64/libEFWFilter.so" PackagePath="runtimes/linux-arm64/native" Pack="True" />
+	<None Include="lib/linux-arm/libASICamera2.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+	<None Include="lib/linux-arm/libEAFFocuser.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+	<None Include="lib/linux-arm/libEFWFilter.so" PackagePath="runtimes/linux-arm/native" Pack="True" />
+	<None Include="lib/osx-x64/libASICamera2.dylib" PackagePath="runtimes/osx-x64/native" Pack="True" />
+	<None Include="lib/osx-x64/libEAFFocuser.dylib" PackagePath="runtimes/osx-x64/native" Pack="True" />
+	<None Include="lib/osx-x64/libEFWFilter.dylib" PackagePath="runtimes/osx-x64/native" Pack="True" />
+	<None Include="lib/osx-arm64/libASICamera2.dylib" PackagePath="runtimes/osx-arm64/native" Pack="True" />
+	<None Include="lib/osx-arm64/libEAFFocuser.dylib" PackagePath="runtimes/osx-arm64/native" Pack="True" />
+	<None Include="lib/osx-arm64/libEFWFilter.dylib" PackagePath="runtimes/osx-arm64/native" Pack="True" />
   </ItemGroup>
 
   <!--
@@ -71,13 +71,11 @@
     deps.json entry only a package supplies. Update rather than a second Include, so the metadata
     lands on the item declared above instead of duplicating it.
 
-    Selected by RID, which is where this goes further than QHYCCD.SDK's OS-only version, because
-    ZWO's layout demands it: lib/x64 and lib/x86 each hold BOTH the Windows .dll and the Linux .so,
-    and arm lives in two further directories. An OS test alone would copy the x64 .so onto a
-    Raspberry Pi, which is worse than copying nothing, a wrong-architecture native failing to load
-    with an error about the file rather than an obvious absence; linux-arm64 is a deployment this
-    project supports. ZWO ships no macOS and no win-arm64 binaries at all, so for those RIDs the
-    mapping stays empty and nothing is copied, which is the honest answer rather than an oversight.
+    Selected by RID: lib/ is laid out one directory per runtime identifier, so the build's own RID
+    names the directory, and a RID this package has no natives for (win-x86, win-arm64, musl)
+    copies nothing, which is the honest answer. An OS test alone would be worse than nothing on a
+    Raspberry Pi, copying the x64 .so, which fails to load with an error about the file rather than
+    an obvious absence.
   -->
   <PropertyGroup>
 	<_ZwoNativeRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_ZwoNativeRid>
@@ -85,20 +83,18 @@
 	<!-- Never empty past here, so the StartsWith calls below always have a string to run on. -->
 	<_ZwoNativeRid Condition="'$(_ZwoNativeRid)' == ''">unknown</_ZwoNativeRid>
 
-	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'win-x64' Or '$(_ZwoNativeRid)' == 'linux-x64'">lib/x64</_ZwoNativeDir>
-	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'win-x86' Or '$(_ZwoNativeRid)' == 'linux-x86'">lib/x86</_ZwoNativeDir>
-	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'linux-arm'">lib/armv7</_ZwoNativeDir>
-	<_ZwoNativeDir Condition="'$(_ZwoNativeRid)' == 'linux-arm64'">lib/armv8</_ZwoNativeDir>
+	<_ZwoNativeDir Condition="Exists('$(MSBuildThisFileDirectory)lib/$(_ZwoNativeRid)')">lib/$(_ZwoNativeRid)</_ZwoNativeDir>
 
-	<_ZwoNativePrefix Condition="$(_ZwoNativeRid.StartsWith('linux-'))">lib</_ZwoNativePrefix>
+	<_ZwoNativePrefix Condition="$(_ZwoNativeRid.StartsWith('linux-')) Or $(_ZwoNativeRid.StartsWith('osx-'))">lib</_ZwoNativePrefix>
 	<_ZwoNativeSuffix Condition="$(_ZwoNativeRid.StartsWith('win-'))">.dll</_ZwoNativeSuffix>
 	<_ZwoNativeSuffix Condition="$(_ZwoNativeRid.StartsWith('linux-'))">.so</_ZwoNativeSuffix>
+	<_ZwoNativeSuffix Condition="$(_ZwoNativeRid.StartsWith('osx-'))">.dylib</_ZwoNativeSuffix>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(_ZwoNativeDir)' != ''">
 	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)ASICamera2$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)ASICamera2$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
-	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)EAFFocuser1.6$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)EAFFocuser1.6$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
-	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)EFW1.7$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)EFW1.7$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
+	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)EAFFocuser$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)EAFFocuser$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
+	<None Update="$(_ZwoNativeDir)/$(_ZwoNativePrefix)EFWFilter$(_ZwoNativeSuffix)" Link="$(_ZwoNativePrefix)EFWFilter$(_ZwoNativeSuffix)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!--

@@ -15,7 +15,7 @@ Thanks Robin(http://www.sharpcap.co.uk) who provide the c# head file and add sup
 Thanks Torsten(http://firecapture.wonderplanets.de/) who add ASI SDK support in the FC2.3.
 thanks guys who are using and want to develop with the ASI cameras.
 
-Any bug feel free contact us:Sam.wen@zwoptical.com
+Any bug feel free contact us: software@zwoptical.com
 
 
 

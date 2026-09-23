@@ -9,13 +9,15 @@ namespace ZWOptical.SDK;
 /// Makes libudev's symbols globally visible on Linux before any ZWO native is loaded.
 /// </summary>
 /// <remarks>
-/// <para><b>The defect this works around is in the vendor's binaries.</b> `libEFW1.7.so` (filter
-/// wheels) and `libEAFFocuser1.6.so` (focusers) call fifteen or sixteen udev functions each --
+/// <para><b>The defect this works around is in the vendor's binaries.</b> `libEFWFilter.so` (filter
+/// wheels) and `libEAFFocuser.so` (focusers) call sixteen udev functions each --
 /// <c>udev_new</c>, <c>udev_enumerate_scan_devices</c>, <c>udev_device_get_devnode</c> and the rest --
-/// and their <c>DT_NEEDED</c> lists name only libstdc++, libm, libgcc_s and libc. They record no
+/// and their <c>DT_NEEDED</c> lists name only libstdc++, libm, libgcc_s, libc and the loader. They record no
 /// dependency on libudev at all, so nothing causes it to be loaded, and the first call into either
 /// library kills the process outright:</para>
 /// <code>symbol lookup error: libEFW1.7.so: undefined symbol: udev_new</code>
+/// <para>Still true of EFW 1.8.4 and EAF 1.8.1 (read off the x64 and armv8 libraries, 2026-09-23),
+/// which is why this stays; the message above is from the 1.7 library it was found on.</para>
 /// <para>The camera and QHY libraries do not have this problem; `libASICamera2.so` correctly declares
 /// <c>libusb-1.0.so.0</c>. It is specific to the two device families, and it is why running any
 /// TianWen app that references the vendor drivers used to need an <c>LD_PRELOAD</c> in front of it.</para>
@@ -77,8 +79,8 @@ internal static partial class NativeDependencies
 
     /// <remarks>
     /// Declared linux-only rather than merely called that way, so the platform analyzer checks the
-    /// guard instead of a comment asserting it. There is no equivalent to annotate for: this package
-    /// ships natives for Linux and Windows only, and the Windows ones have no such defect.
+    /// guard instead of a comment asserting it. There is no equivalent to annotate for: the Windows
+    /// and macOS natives have no such defect, udev being Linux's alone.
     /// <para>The <c>libc</c> name is right for glibc, where dlopen moved out of libdl in 2.34, and
     /// the catch in the caller covers a C library that does not answer to it.</para>
     /// </remarks>

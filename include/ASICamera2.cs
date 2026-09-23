@@ -283,14 +283,23 @@ public static partial class ASICamera2
             CMOSControlType.FanOn => ASI_CONTROL_TYPE.ASI_FAN_ON,
             CMOSControlType.PatternAdjust => ASI_CONTROL_TYPE.ASI_PATTERN_ADJUST,
             CMOSControlType.AntiDewHeater => ASI_CONTROL_TYPE.ASI_ANTI_DEW_HEATER,
-            CMOSControlType.Humidity => ASI_CONTROL_TYPE.ASI_HUMIDITY,
-            CMOSControlType.EnableDDR => ASI_CONTROL_TYPE.ASI_ENABLE_DDR,
+            // Humidity and EnableDDR are QHY controls with no ZWO equivalent, and refuse here as
+            // they do on Player One. They used to map to ASI_HUMIDITY and ASI_ENABLE_DDR, which
+            // exist only in ZWO's bundled C# wrapper and never in the C header: that file numbered
+            // them 22 and 23, which the header now gives to ASI_FAN_ADJUST and ASI_PWRLED_BRIGNT,
+            // so "enable DDR" at connect would have set a 1.41 camera's power LED brightness to 1.
             _ => (ASI_CONTROL_TYPE)int.MaxValue
         };
 
         return asiValue is not (ASI_CONTROL_TYPE)int.MaxValue;
     }
 
+    /// <remarks>
+    /// Transcribed from the C header, <c>include/ASICamera2.h</c>, which is the numbering the library
+    /// answers in. NOT from ZWO's bundled <c>ASICameraDll2.cs</c>, which still ends at a
+    /// <c>ASI_HUMIDITY</c> and <c>ASI_ENABLE_DDR</c> the header never had, on the two values the
+    /// header has since given to the fan and the power LED.
+    /// </remarks>
     public enum ASI_CONTROL_TYPE
     {
         ASI_GAIN = 0,
@@ -315,8 +324,13 @@ public static partial class ASICamera2
         ASI_FAN_ON,
         ASI_PATTERN_ADJUST,
         ASI_ANTI_DEW_HEATER,
-        ASI_HUMIDITY,
-        ASI_ENABLE_DDR
+        ASI_FAN_ADJUST,
+        ASI_PWRLED_BRIGNT,
+        ASI_USBHUB_RESET,
+        ASI_GPS_SUPPORT,
+        ASI_GPS_START_LINE,
+        ASI_GPS_END_LINE,
+        ASI_ROLLING_INTERVAL,// microseconds
     }
 
 
@@ -374,6 +388,11 @@ public static partial class ASICamera2
         ASI_ERROR_VIDEO_MODE_ACTIVE,
         ASI_ERROR_EXPOSURE_IN_PROGRESS,
         ASI_ERROR_GENERAL_ERROR,//general error, eg: value is out of valid range
+        ASI_ERROR_GPS_NOT_SUPPORTED, //this camera does not support GPS
+        ASI_ERROR_GPS_VER_ERR, //the FPGA GPS version is too low
+        ASI_ERROR_GPS_FPGA_ERR, //failed to read or write data to the FPGA
+        ASI_ERROR_GPS_PARAM_OUT_OF_RANGE, //start or end line out of range, must be 0 to MaxHeight - 1
+        ASI_ERROR_GPS_DATA_INVALID, //GPS has no satellite fix yet, or the FPGA cannot read GPS data
         ASI_ERROR_END
     };
 

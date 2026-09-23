@@ -6,14 +6,14 @@ using TianWen.DAL;
 
 namespace ZWOptical.SDK;
 
-public static partial class EAFFocuser1_6
+public static partial class EAFFocuser
 {
-    // libEAFFocuser1.6.so names no libudev in its DT_NEEDED and calls fifteen of its functions anyway, so
+    // libEAFFocuser.so names no libudev in its DT_NEEDED and calls sixteen of its functions anyway, so
     // those symbols have to be in the global namespace before the runtime loads it, or the
     // first call into this class kills the process with a symbol lookup error. A static
     // constructor runs before this class's first P/Invoke, which is exactly when that load
     // happens. See NativeDependencies for why NativeLibrary.Load cannot do it.
-    static EAFFocuser1_6() => NativeDependencies.EnsureLinuxUdevIsGloballyVisible();
+    static EAFFocuser() => NativeDependencies.EnsureLinuxUdevIsGloballyVisible();
 
     public enum EAF_ERROR_CODE
     {
@@ -47,7 +47,34 @@ public static partial class EAFFocuser1_6
 
         EAF_ERROR_NOT_SUPPORTED,
 
+        /// <remarks>
+        /// Where the 1.8.1 header puts it, unmeasured: no EAF has been on the bench since. The EFW
+        /// library of the same generation answers one past its header's value for "not open" (see
+        /// <see cref="EFWFilter.EFW_ERROR_CODE.EFW_ERROR_CLOSED"/>), so check this one against a real
+        /// focuser before anything branches on it.
+        /// </remarks>
         EAF_ERROR_CLOSED,
+
+        /// <summary>The battery temperature is abnormal (battery-powered focusers, new in 1.8).</summary>
+        EAF_ERROR_BATTER_INFO,
+
+        EAF_ERROR_INVALID_LENGTH,
+
+        // Bluetooth transport, new in 1.8. The binding does not drive a focuser over Bluetooth; the
+        // codes are here so a USB call that answers one is named rather than a bare number.
+        EAF_BLE_READ_DATA_FAILED = 50,
+        EAF_BLE_SEND_DATA_FAILED,
+        EAF_BLE_CONNECT_FAILED,
+        EAF_BLE_DISCONNECT,
+        EAF_BLE_PAIR_FAILED,
+        EAF_BLE_CLEAR_PAIR_FAILED,
+        EAF_BLE_PAIRING_TIMEOUT,
+        EAF_BLE_RECEIVE_TIMEOUT,
+        EAF_BLE_DEVICE_NOT_EXISTS,
+        EAF_BLE_INVALID_CALLBACK,
+        EAF_BLE_NEW_PAIR_REQUEST,
+        EAF_BLE_DATA_BUSY,
+        EAF_BLE_CHECK_SIZE_FAILED,
 
         EAF_ERROR_END = -1
     }
@@ -92,7 +119,7 @@ public static partial class EAFFocuser1_6
         public string CustomId => Name;
     }
 
-    const string EAFSharedLib = "EAFFocuser1.6";
+    const string EAFSharedLib = "EAFFocuser";
 
     public static readonly int EAF_ID_MAX = 128;
     public static readonly int ZWO_VENDOR_ID = 0x03C3;
