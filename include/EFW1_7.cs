@@ -46,7 +46,23 @@ public static partial class EFW1_7
 
         public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
-        public bool Open() => EFWOpen(ID) is EFW_ERROR_CODE.EFW_SUCCESS;
+        /// <summary>
+        /// Opens the wheel AND reads its properties, because the SDK will not move a wheel it has not
+        /// read the properties of.
+        /// </summary>
+        /// <remarks>
+        /// Straight after <c>EFWOpen</c>, <c>EFWSetPosition</c> answers <c>EFW_ERROR_GENERAL_ERROR</c>
+        /// for EVERY target, including the slot the wheel already sits in; after one
+        /// <c>EFWGetProperty</c> on the open handle, every move succeeds. Measured on an EFW(8PosPlan)
+        /// (firmware 3.0.9) 2026-09-23, identically under SDK 1.7 and 1.8.4, while SharpCap moved the
+        /// same wheel fine. The SDK learns the slot count from that read and range-checks the target
+        /// against it, which is why the order the 1.8.4 header now documents is Open, then
+        /// GetProperty, then the moves. Doing it here means no caller can get the order wrong; a wheel
+        /// whose properties cannot be read is reported as not opened, since it could not be moved.
+        /// </remarks>
+        public bool Open()
+            => EFWOpen(ID) is EFW_ERROR_CODE.EFW_SUCCESS
+               && EFWGetProperty(ID, out _) is EFW_ERROR_CODE.EFW_SUCCESS;
 
         public bool Close() => EFWClose(ID) is EFW_ERROR_CODE.EFW_SUCCESS;
 
