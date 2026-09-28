@@ -9,6 +9,9 @@ namespace ZWOptical.SDK;
 
 public static partial class ASICamera2
 {
+    /// <summary>Who has each camera open, so a listing or another connect never closes one a driver holds.</summary>
+    internal static readonly SharedSessions<int> CameraOpens = new SharedSessions<int>();
+
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct ASI_CAMERA_INFO : ICMOSNativeInterface
     {
@@ -49,9 +52,11 @@ public static partial class ASICamera2
 
         public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
-        public bool Open() => ASIOpenCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
+        // Counted (INativeDeviceInfo.Open): ASIOpenCamera is harmless on an open camera, but the first ASICloseCamera
+        // ends its session for every holder.
+        public bool Open() => CameraOpens.Acquire(ID, static id => ASIOpenCamera(id) is ASI_ERROR_CODE.ASI_SUCCESS);
 
-        public bool Close() => ASICloseCamera(ID) is ASI_ERROR_CODE.ASI_SUCCESS;
+        public bool Close() => CameraOpens.Release(ID, static id => ASICloseCamera(id) is ASI_ERROR_CODE.ASI_SUCCESS);
 
         /// <summary>
         /// Factory-programmed serial as a 16-char hex string, or null if the camera

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,6 +8,9 @@ namespace ZWOptical.SDK;
 
 public static partial class EFWFilter
 {
+    /// <summary>Who has each wheel open, so a listing never closes one a driver holds.</summary>
+    internal static readonly SharedSessions<int> WheelOpens = new SharedSessions<int>();
+
     // libEFWFilter.so names no libudev in its DT_NEEDED and calls sixteen of its functions anyway, so
     // those symbols have to be in the global namespace before the runtime loads it, or the
     // first call into this class kills the process with a symbol lookup error. A static
@@ -71,11 +74,12 @@ public static partial class EFWFilter
         /// GetProperty, then the moves. Doing it here means no caller can get the order wrong; a wheel
         /// whose properties cannot be read is reported as not opened, since it could not be moved.
         /// </remarks>
+        // Counted (INativeDeviceInfo.Open), so a listing never closes a wheel a driver holds.
         public bool Open()
-            => EFWOpen(ID) is EFW_ERROR_CODE.EFW_SUCCESS
-               && EFWGetProperty(ID, out _) is EFW_ERROR_CODE.EFW_SUCCESS;
+            => WheelOpens.Acquire(ID, static id => EFWOpen(id) is EFW_ERROR_CODE.EFW_SUCCESS
+               && EFWGetProperty(id, out _) is EFW_ERROR_CODE.EFW_SUCCESS);
 
-        public bool Close() => EFWClose(ID) is EFW_ERROR_CODE.EFW_SUCCESS;
+        public bool Close() => WheelOpens.Release(ID, static id => EFWClose(id) is EFW_ERROR_CODE.EFW_SUCCESS);
 
         /// <summary>
         /// Factory serial as a 16-char hex string, or null if not programmed. Same

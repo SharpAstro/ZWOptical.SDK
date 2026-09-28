@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,6 +8,9 @@ namespace ZWOptical.SDK;
 
 public static partial class EAFFocuser
 {
+    /// <summary>Who has each focuser open, so a listing never closes one a driver holds.</summary>
+    internal static readonly SharedSessions<int> FocuserOpens = new SharedSessions<int>();
+
     // libEAFFocuser.so names no libudev in its DT_NEEDED and calls sixteen of its functions anyway, so
     // those symbols have to be in the global namespace before the runtime loads it, or the
     // first call into this class kills the process with a symbol lookup error. A static
@@ -93,9 +96,10 @@ public static partial class EAFFocuser
 
         public string Name => Encoding.ASCII.GetString(_name).TrimEnd((char)0);
 
-        public bool Open() => EAFOpen(ID) is EAF_ERROR_CODE.EAF_SUCCESS;
+        // Counted (INativeDeviceInfo.Open), so a listing never closes a focuser a driver holds.
+        public bool Open() => FocuserOpens.Acquire(ID, static id => EAFOpen(id) is EAF_ERROR_CODE.EAF_SUCCESS);
 
-        public bool Close() => EAFClose(ID) is EAF_ERROR_CODE.EAF_SUCCESS;
+        public bool Close() => FocuserOpens.Release(ID, static id => EAFClose(id) is EAF_ERROR_CODE.EAF_SUCCESS);
 
         /// <summary>
         /// Factory serial as a 16-char hex string, or null if not programmed. Same
