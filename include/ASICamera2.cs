@@ -197,14 +197,22 @@ public static partial class ASICamera2
             return TryGetControlRange(CMOSControlType.WB_R, out min, out max);
         }
 
+        /// <remarks>
+        /// A control with no ASI equivalent is refused with <see cref="CMOSErrorCode.InvalidControlType"/>,
+        /// the code the library itself answers for a control the camera lacks, and is never thrown. A
+        /// consumer writes one list of controls to every vendor and each maps a different subset, so a
+        /// throw here fails the whole connect: once 6.0 unmapped <see cref="CMOSControlType.EnableDDR"/>,
+        /// every ZWO camera failed to connect through TianWen.
+        /// </remarks>
         public CMOSErrorCode SetControlValue(CMOSControlType controlType, int value, bool isAuto = false)
         {
             if (DALControlTypeToASI(controlType, out ASI_CONTROL_TYPE asiControlType))
                 return (CMOSErrorCode)ASISetControlValueImpl(_cameraID, asiControlType, value, isAuto ? ASI_BOOL.ASI_TRUE : ASI_BOOL.ASI_FALSE);
 
-            throw new ArgumentException($"{controlType} is not supported", nameof(controlType));
+            return CMOSErrorCode.InvalidControlType;
         }
 
+        /// <remarks>A control with no ASI equivalent is refused as <see cref="SetControlValue"/> refuses it.</remarks>
         public CMOSErrorCode GetControlValue(CMOSControlType controlType, out int value, out bool isAuto)
         {
             if (DALControlTypeToASI(controlType, out ASI_CONTROL_TYPE asiControlType))
@@ -214,7 +222,9 @@ public static partial class ASICamera2
                 return (CMOSErrorCode)err;
             }
 
-            throw new ArgumentException($"{controlType} is not supported", nameof(controlType));
+            value = 0;
+            isAuto = false;
+            return CMOSErrorCode.InvalidControlType;
         }
 
         public CMOSErrorCode PulseGuideOn(GuideDirection guideDirection) => (CMOSErrorCode)ASIPulseGuideOn(_cameraID, (ASI_GUIDE_DIRECTION)guideDirection);
