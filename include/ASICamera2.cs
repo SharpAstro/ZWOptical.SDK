@@ -280,6 +280,9 @@ public static partial class ASICamera2
             CMOSControlType.Brightness => ASI_CONTROL_TYPE.ASI_BRIGHTNESS,
             CMOSControlType.BandwidthOverload => ASI_CONTROL_TYPE.ASI_BANDWIDTHOVERLOAD,
             CMOSControlType.Overclock => ASI_CONTROL_TYPE.ASI_OVERCLOCK,
+            // Both are tenths of a degree. Missing from this table since it was written, so no ZWO body
+            // reported a sensor temperature: a cooled one's ramp had nothing to read.
+            CMOSControlType.TemperatureDeci => ASI_CONTROL_TYPE.ASI_TEMPERATURE,
             CMOSControlType.Flip => ASI_CONTROL_TYPE.ASI_FLIP,
             CMOSControlType.AutoMaxGain => ASI_CONTROL_TYPE.ASI_AUTO_MAX_GAIN,
             CMOSControlType.AutoMaxExposure => ASI_CONTROL_TYPE.ASI_AUTO_MAX_EXP,
