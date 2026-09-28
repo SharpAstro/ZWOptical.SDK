@@ -266,6 +266,33 @@ public static partial class ASICamera2
         public CMOSErrorCode SetROIFormat(int width, int height, int bin, PixelDataFormat pixelDataFormat) => (CMOSErrorCode)ASISetROIFormat(_cameraID, width, height, bin, (ASI_IMG_TYPE)pixelDataFormat);
 
         public CMOSErrorCode GetDataAfterExposure(IntPtr buffer, int bufferSize) => (CMOSErrorCode)ASIGetDataAfterExp(_cameraID, buffer, bufferSize);
+
+        /// <remarks>Every ASI body streams: video capture is the same readout the SDK's single frames use, left running.</remarks>
+        public bool CanVideoCapture => true;
+
+        /// <remarks>
+        /// The header says so of <c>ASISetStartPos</c>: "you can call this API to move the ROI area
+        /// when video is streaming". The size still needs a stop, since <c>ASISetROIFormat</c>
+        /// requires capture to be stopped first.
+        /// </remarks>
+        public bool CanPanRoiWhileStreaming => true;
+
+        public CMOSErrorCode StartVideoCapture() => (CMOSErrorCode)ASIStartVideoCapture(_cameraID);
+
+        public CMOSErrorCode StopVideoCapture() => (CMOSErrorCode)ASIStopVideoCapture(_cameraID);
+
+        public CMOSErrorCode GetVideoData(IntPtr buffer, int bufferSize, int waitMs) => (CMOSErrorCode)ASIGetVideoData(_cameraID, buffer, bufferSize, waitMs);
+
+        public bool TryGetDroppedFrames(out int dropped)
+        {
+            if (ASIGetDroppedFrames(_cameraID, out dropped) is ASI_ERROR_CODE.ASI_SUCCESS)
+            {
+                return true;
+            }
+
+            dropped = 0;
+            return false;
+        }
     };
 
     public static bool DALControlTypeToASI(CMOSControlType dalValue, out ASI_CONTROL_TYPE asiValue)
@@ -555,6 +582,14 @@ public static partial class ASICamera2
     [LibraryImport(ASISharedLib, EntryPoint = "ASIGetVideoData")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ASI_ERROR_CODE ASIGetVideoData(int iCameraID, IntPtr pBuffer, int lBuffSize, int iWaitms);
+
+    /// <remarks>
+    /// Frames lost since the stream started, for a USB link or a reader too slow for it; the header
+    /// resets it when video capture stops.
+    /// </remarks>
+    [LibraryImport(ASISharedLib, EntryPoint = "ASIGetDroppedFrames")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial ASI_ERROR_CODE ASIGetDroppedFrames(int iCameraID, out int piDropFrames);
 
     [LibraryImport(ASISharedLib, EntryPoint = "ASIPulseGuideOn")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
