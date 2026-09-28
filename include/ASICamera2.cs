@@ -265,6 +265,18 @@ public static partial class ASICamera2
 
         public CMOSErrorCode SetROIFormat(int width, int height, int bin, PixelDataFormat pixelDataFormat) => (CMOSErrorCode)ASISetROIFormat(_cameraID, width, height, bin, (ASI_IMG_TYPE)pixelDataFormat);
 
+        /// <remarks>
+        /// <c>ASISetROIFormat</c>'s own rule: "Make sure iWidth%8 == 0" and "iHeight%2 == 0". The
+        /// header sets none for the origin. Not expressed here: the USB 2.0 ASI120 also wants
+        /// width x height a multiple of 1024.
+        /// </remarks>
+        public void GetRoiSteps(out int widthStep, out int heightStep, out int originStepX, out int originStepY)
+        {
+            widthStep = 8;
+            heightStep = 2;
+            originStepX = originStepY = 1;
+        }
+
         public CMOSErrorCode GetDataAfterExposure(IntPtr buffer, int bufferSize) => (CMOSErrorCode)ASIGetDataAfterExp(_cameraID, buffer, bufferSize);
 
         /// <remarks>Every ASI body streams: video capture is the same readout the SDK's single frames use, left running.</remarks>
