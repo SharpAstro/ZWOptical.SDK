@@ -321,7 +321,7 @@ public static partial class ASICamera2
             CMOSControlType.Gamma => ASI_CONTROL_TYPE.ASI_GAMMA,
             CMOSControlType.WB_R => ASI_CONTROL_TYPE.ASI_WB_R,
             CMOSControlType.WB_B => ASI_CONTROL_TYPE.ASI_WB_B,
-            CMOSControlType.Brightness => ASI_CONTROL_TYPE.ASI_BRIGHTNESS,
+            CMOSControlType.BlackLevel =>ASI_CONTROL_TYPE.ASI_BRIGHTNESS,
             CMOSControlType.BandwidthOverload => ASI_CONTROL_TYPE.ASI_BANDWIDTHOVERLOAD,
             CMOSControlType.Overclock => ASI_CONTROL_TYPE.ASI_OVERCLOCK,
             // Both are tenths of a degree. Missing from this table since it was written, so no ZWO body
