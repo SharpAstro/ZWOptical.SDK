@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,6 +12,37 @@ public static partial class ASICamera2
 {
     /// <summary>Who has each camera open, so a listing or another connect never closes one a driver holds.</summary>
     internal static readonly SharedSessions<int> CameraOpens = new SharedSessions<int>();
+
+    /// <summary>
+    /// The cameras whose <see cref="ASIInitCamera"/> succeeded since they were opened (SharpAstro/tianwen#1760).
+    /// </summary>
+    /// <remarks>
+    /// <c>ASIOpenCamera</c> does not initialise a camera, and what the SDK does with an exposure or a video start on an
+    /// opened camera nobody initialised is undocumented. A driver opens, marks itself connected and only then initialises,
+    /// so a poll or an exposure could reach the body in between. The binding therefore refuses an exposure, a download
+    /// and video with <see cref="ASI_ERROR_CODE.ASI_ERROR_INVALID_SEQUENCE"/> until the init ran, and forgets the init
+    /// when the last holder closes the camera.
+    /// </remarks>
+    private static readonly ConcurrentDictionary<int, byte> CameraInits = new ConcurrentDictionary<int, byte>();
+
+    /// <summary>
+    /// Initialises an opened camera, and records that it did, so the binding lets exposures and video through
+    /// (<see cref="CameraInits"/>).
+    /// </summary>
+    public static ASI_ERROR_CODE ASIInitCamera(int iCameraID)
+    {
+        var err = ASIInitCameraNative(iCameraID);
+        if (err is ASI_ERROR_CODE.ASI_SUCCESS)
+        {
+            CameraInits[iCameraID] = 0;
+        }
+
+        return err;
+    }
+
+    /// <summary>The error a camera's exposure or video is answered with before its init ran, or success.</summary>
+    private static ASI_ERROR_CODE RequireInit(int iCameraID)
+        => CameraInits.ContainsKey(iCameraID) ? ASI_ERROR_CODE.ASI_SUCCESS : ASI_ERROR_CODE.ASI_ERROR_INVALID_SEQUENCE;
 
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct ASI_CAMERA_INFO : ICMOSNativeInterface
@@ -56,7 +88,12 @@ public static partial class ASICamera2
         // ends its session for every holder.
         public bool Open() => CameraOpens.Acquire(ID, static id => ASIOpenCamera(id) is ASI_ERROR_CODE.ASI_SUCCESS);
 
-        public bool Close() => CameraOpens.Release(ID, static id => ASICloseCamera(id) is ASI_ERROR_CODE.ASI_SUCCESS);
+        // The last holder's close ends the camera's session, and with it the init (CameraInits): a later open initialises again.
+        public bool Close() => CameraOpens.Release(ID, static id =>
+        {
+            CameraInits.TryRemove(id, out _);
+            return ASICloseCamera(id) is ASI_ERROR_CODE.ASI_SUCCESS;
+        });
 
         /// <summary>
         /// Factory-programmed serial as a 16-char hex string, or null if the camera
@@ -236,9 +273,10 @@ public static partial class ASICamera2
 
         public CMOSErrorCode PulseGuideOff(GuideDirection guideDirection) => (CMOSErrorCode)ASIPulseGuideOff(_cameraID, (ASI_GUIDE_DIRECTION)guideDirection);
 
-        public CMOSErrorCode StartLightExposure() => (CMOSErrorCode)ASIStartLightExposure(_cameraID);
+        // Refused until the camera's init ran (CameraInits).
+        public CMOSErrorCode StartLightExposure() => (CMOSErrorCode)(RequireInit(_cameraID) is var ready and not ASI_ERROR_CODE.ASI_SUCCESS ? ready : ASIStartLightExposure(_cameraID));
 
-        public CMOSErrorCode StartDarkExposure() => (CMOSErrorCode)ASIStartDarkExposure(_cameraID);
+        public CMOSErrorCode StartDarkExposure() => (CMOSErrorCode)(RequireInit(_cameraID) is var ready and not ASI_ERROR_CODE.ASI_SUCCESS ? ready : ASIStartDarkExposure(_cameraID));
 
         public CMOSErrorCode StopExposure() => (CMOSErrorCode)ASIStopExposure(_cameraID);
 
@@ -282,7 +320,7 @@ public static partial class ASICamera2
             originStepX = originStepY = 1;
         }
 
-        public CMOSErrorCode GetDataAfterExposure(IntPtr buffer, int bufferSize) => (CMOSErrorCode)ASIGetDataAfterExp(_cameraID, buffer, bufferSize);
+        public CMOSErrorCode GetDataAfterExposure(IntPtr buffer, int bufferSize) => (CMOSErrorCode)(RequireInit(_cameraID) is var ready and not ASI_ERROR_CODE.ASI_SUCCESS ? ready : ASIGetDataAfterExp(_cameraID, buffer, bufferSize));
 
         /// <remarks>Every ASI body streams: video capture is the same readout the SDK's single frames use, left running.</remarks>
         public bool CanVideoCapture => true;
@@ -294,11 +332,11 @@ public static partial class ASICamera2
         /// </remarks>
         public bool CanPanRoiWhileStreaming => true;
 
-        public CMOSErrorCode StartVideoCapture() => (CMOSErrorCode)ASIStartVideoCapture(_cameraID);
+        public CMOSErrorCode StartVideoCapture() => (CMOSErrorCode)(RequireInit(_cameraID) is var ready and not ASI_ERROR_CODE.ASI_SUCCESS ? ready : ASIStartVideoCapture(_cameraID));
 
         public CMOSErrorCode StopVideoCapture() => (CMOSErrorCode)ASIStopVideoCapture(_cameraID);
 
-        public CMOSErrorCode GetVideoData(IntPtr buffer, int bufferSize, int waitMs) => (CMOSErrorCode)ASIGetVideoData(_cameraID, buffer, bufferSize, waitMs);
+        public CMOSErrorCode GetVideoData(IntPtr buffer, int bufferSize, int waitMs) => (CMOSErrorCode)(RequireInit(_cameraID) is var ready and not ASI_ERROR_CODE.ASI_SUCCESS ? ready : ASIGetVideoData(_cameraID, buffer, bufferSize, waitMs));
 
         public bool TryGetDroppedFrames(out int dropped)
         {
@@ -548,9 +586,10 @@ public static partial class ASICamera2
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ASI_ERROR_CODE ASIOpenCamera(int iCameraID);
 
+    // Reached through ASIInitCamera, which records the init (CameraInits).
     [LibraryImport(ASISharedLib, EntryPoint = "ASIInitCamera")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial ASI_ERROR_CODE ASIInitCamera(int iCameraID);
+    private static partial ASI_ERROR_CODE ASIInitCameraNative(int iCameraID);
 
     [LibraryImport(ASISharedLib, EntryPoint = "ASICloseCamera")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
