@@ -19,9 +19,14 @@ public static partial class ASICamera2
     /// <remarks>
     /// <c>ASIOpenCamera</c> does not initialise a camera, and what the SDK does with an exposure or a video start on an
     /// opened camera nobody initialised is undocumented. A driver opens, marks itself connected and only then initialises,
-    /// so a poll or an exposure could reach the body in between. The binding therefore refuses an exposure, a download
-    /// and video with <see cref="ASI_ERROR_CODE.ASI_ERROR_INVALID_SEQUENCE"/> until the init ran, and forgets the init
-    /// when the last holder closes the camera.
+    /// so a poll or an exposure could reach the body in between. The <see cref="ASI_CAMERA_INFO"/> methods therefore refuse
+    /// an exposure, a download and video with <see cref="ASI_ERROR_CODE.ASI_ERROR_INVALID_SEQUENCE"/> until the init ran,
+    /// and <see cref="ASI_CAMERA_INFO.Close"/> forgets the init when the last holder closes the camera.
+    /// Here <c>INVALID_SEQUENCE</c> means "initialise first" (call <c>ASIInitCamera</c>), NOT the header's "camera is in
+    /// capture now, stop capture first": it is kept because it is a sequencing error and consumers already treat it so.
+    /// The raw P/Invoke entry points (<c>ASIStartExposure</c>, <c>ASIStartVideoCapture</c>, <c>ASIGetVideoData</c>,
+    /// <c>ASIGetDataAfterExp</c>, <c>ASIOpenCamera</c>, <c>ASICloseCamera</c>, ...) are public and unguarded: they neither
+    /// check nor clear this record, so a raw close then reopen keeps a stale init. Use the <see cref="ASI_CAMERA_INFO"/> methods.
     /// </remarks>
     private static readonly ConcurrentDictionary<int, byte> CameraInits = new ConcurrentDictionary<int, byte>();
 
@@ -40,7 +45,10 @@ public static partial class ASICamera2
         return err;
     }
 
-    /// <summary>The error a camera's exposure or video is answered with before its init ran, or success.</summary>
+    /// <summary>
+    /// The error a camera's exposure or video is answered with before its init ran, or success. The code means
+    /// "init first" here, not "capture in progress" (see <see cref="CameraInits"/>).
+    /// </summary>
     private static ASI_ERROR_CODE RequireInit(int iCameraID)
         => CameraInits.ContainsKey(iCameraID) ? ASI_ERROR_CODE.ASI_SUCCESS : ASI_ERROR_CODE.ASI_ERROR_INVALID_SEQUENCE;
 
