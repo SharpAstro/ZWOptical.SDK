@@ -23,7 +23,8 @@ public static partial class ASICamera2
     /// an exposure, a download and video with <see cref="ASI_ERROR_CODE.ASI_ERROR_INVALID_SEQUENCE"/> until the init ran,
     /// and <see cref="ASI_CAMERA_INFO.Close"/> forgets the init when the last holder closes the camera.
     /// Here <c>INVALID_SEQUENCE</c> means "initialise first" (call <c>ASIInitCamera</c>), NOT the header's "camera is in
-    /// capture now, stop capture first": it is kept because it is a sequencing error and consumers already treat it so.
+    /// capture now, stop capture first": it is kept because it is a sequencing error, and the other vendor SDKs (SVBony, ToupTek)
+    /// answer it for a call made out of sequence.
     /// The raw P/Invoke entry points (<c>ASIStartExposure</c>, <c>ASIStartVideoCapture</c>, <c>ASIGetVideoData</c>,
     /// <c>ASIGetDataAfterExp</c>, <c>ASIOpenCamera</c>, <c>ASICloseCamera</c>, ...) are public and unguarded: they neither
     /// check nor clear this record, so a raw close then reopen keeps a stale init. Use the <see cref="ASI_CAMERA_INFO"/> methods.
